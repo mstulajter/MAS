@@ -45,6 +45,24 @@ while read field_name field_value; do
   fi
 done < "${conf_file}"
 
+# Check if CUSPARSE is enabled (look for -DCUSPARSE in FRTFLAGS)
+if [[ "${FRTFLAGS}" == *"-DCUSPARSE"* ]]; then
+  MAS_CUSPARSE=1
+  # Extract C compiler flags from FRTFLAGS (remove -DCUSPARSE and Fortran-specific flags)
+  # For nvc, use similar flags but remove stdpar which is Fortran-specific
+  CCFLAGS="${FRTFLAGS}"
+  CCFLAGS="${CCFLAGS//-DCUSPARSE/}"
+  CCFLAGS="${CCFLAGS//-stdpar=gpu/}"
+  CCFLAGS="${CCFLAGS//-stdpar=multicore/}"
+  # Clean up extra spaces
+  CCFLAGS=$(echo "${CCFLAGS}" | sed 's/  */ /g' | sed 's/^ *//' | sed 's/ *$//')
+  CC="nvc"
+else
+  MAS_CUSPARSE=0
+  CCFLAGS=""
+  CC=""
+fi
+
 unset field_value
 unset field_name
 
@@ -74,6 +92,9 @@ sed \
   -e "s#<HDF5_INCLUDE_DIR>#${HDF5_INCLUDE_DIR}#g" \
   -e "s#<HDF5_LIB_DIR>#${HDF5_LIB_DIR}#g" \
   -e "s#<HDF5_LIB_FLAGS>#${HDF5_LIB_FLAGS}#g" \
+  -e "s#<MAS_CUSPARSE>#${MAS_CUSPARSE}#g" \
+  -e "s#<CC>#${CC}#g" \
+  -e "s#<CCFLAGS>#${CCFLAGS}#g" \
   Makefile.template > Makefile
 ${echo} "==> Compiling code..."
 make clean 1>/dev/null 2>/dev/null ; make 1>build.log 2>build.err

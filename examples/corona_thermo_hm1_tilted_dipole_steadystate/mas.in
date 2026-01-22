@@ -21,7 +21,8 @@
 !
 ! *** Time domain.
 !
-  tmax = 2.489850348
+  tmax = 0.3
+!  tmax = 2.489850348
 !
 ! *** Grid specifications.
 !
@@ -203,8 +204,8 @@
 ! *** Numerical algorithm options.
 !
   cfl = 0.4
-  use_sts_visc = .true.
-  use_sts_tc   = .true.
+  use_sts_visc = .false.
+  use_sts_tc   = .false.
   visc_auto_subcycle = .true.
   tc_auto_subcycle   = .true.
   ifimplrad    = 0
@@ -212,6 +213,7 @@
   ifprec_v     = 3
   ifprec_pot2d = 3
   ifprec_divb  = 3
+  ifprec_32 = .true.
   epscg_a       = 1.e-9
   epscg_v       = 1.e-9
   epscg_t       = 1.e-9
