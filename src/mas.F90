@@ -189,6 +189,118 @@ module constants
 !
 end module
 !#######################################################################
+module cusparse_interface
+!
+      use, intrinsic :: iso_c_binding
+!
+      implicit none
+!
+#ifdef CUSPARSE
+      interface
+        subroutine load_lusol_cusparse(CSR_A,CSR_AI,CSR_AJ,N,M) &
+          BIND(C, name="load_lusol_cusparse")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          integer(C_INT), value :: N,M
+          type(C_PTR), value :: CSR_A,CSR_AI,CSR_AJ
+        end subroutine load_lusol_cusparse
+!
+        subroutine lusol_cusparse(p) &
+          BIND(C, name="lusol_cusparse")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          type(C_PTR), value :: p
+        end subroutine lusol_cusparse
+!
+        subroutine load_lusol_cusparse_pot2dh(CSR_A,CSR_AI,CSR_AJ,N,M) &
+          BIND(C, name="load_lusol_cusparse_pot2dh")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          integer(C_INT), value :: N,M
+          type(C_PTR), value :: CSR_A,CSR_AI,CSR_AJ
+        end subroutine load_lusol_cusparse_pot2dh
+!
+        subroutine lusol_cusparse_pot2dh(p) &
+          BIND(C, name="lusol_cusparse_pot2dh")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          type(C_PTR), value :: p
+        end subroutine lusol_cusparse_pot2dh
+!
+        subroutine load_lusol_cusparse_pot2d(CSR_A,CSR_AI,CSR_AJ,N,M) &
+          BIND(C, name="load_lusol_cusparse_pot2d")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          integer(C_INT), value :: N,M
+          type(C_PTR), value :: CSR_A,CSR_AI,CSR_AJ
+        end subroutine load_lusol_cusparse_pot2d
+!
+        subroutine lusol_cusparse_pot2d(p) &
+          BIND(C, name="lusol_cusparse_pot2d")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          type(C_PTR), value :: p
+        end subroutine lusol_cusparse_pot2d
+!
+        subroutine unload_lusol_cusparse() &
+          BIND(C, name="unload_lusol_cusparse")
+        end subroutine unload_lusol_cusparse
+!
+        subroutine load_lusol_cusparse_sp(CSR_A,CSR_AI,CSR_AJ,N,M) &
+          BIND(C, name="load_lusol_cusparse_sp")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          integer(C_INT), value :: N,M
+          type(C_PTR), value :: CSR_A,CSR_AI,CSR_AJ
+        end subroutine load_lusol_cusparse_sp
+!
+        subroutine lusol_cusparse_sp(p) &
+          BIND(C, name="lusol_cusparse_sp")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          type(C_PTR), value :: p
+        end subroutine lusol_cusparse_sp
+!
+        subroutine load_lusol_cusparse_pot2dh_sp(CSR_A,CSR_AI,CSR_AJ,N,M) &
+          BIND(C, name="load_lusol_cusparse_pot2dh_sp")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          integer(C_INT), value :: N,M
+          type(C_PTR), value :: CSR_A,CSR_AI,CSR_AJ
+        end subroutine load_lusol_cusparse_pot2dh_sp
+!
+        subroutine lusol_cusparse_pot2dh_sp(p) &
+          BIND(C, name="lusol_cusparse_pot2dh_sp")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          type(C_PTR), value :: p
+        end subroutine lusol_cusparse_pot2dh_sp
+!
+        subroutine load_lusol_cusparse_pot2d_sp(CSR_A,CSR_AI,CSR_AJ,N,M) &
+          BIND(C, name="load_lusol_cusparse_pot2d_sp")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          integer(C_INT), value :: N,M
+          type(C_PTR), value :: CSR_A,CSR_AI,CSR_AJ
+        end subroutine load_lusol_cusparse_pot2d_sp
+!
+        subroutine lusol_cusparse_pot2d_sp(p) &
+          BIND(C, name="lusol_cusparse_pot2d_sp")
+          use, intrinsic :: iso_c_binding
+          implicit none
+          type(C_PTR), value :: p
+        end subroutine lusol_cusparse_pot2d_sp
+!
+        subroutine unload_lusol_cusparse_sp() &
+          BIND(C, name="unload_lusol_cusparse_sp")
+        end subroutine unload_lusol_cusparse_sp
+      end interface
+#endif
+!
+      integer(c_int) :: cN,cM,cN2,cM2,cN3,cM3
+!
+end module
+!#######################################################################
 module globals
 !
 !-----------------------------------------------------------------------
@@ -1395,14 +1507,14 @@ module matrix_storage_pot2d_solve
 !
       integer :: N_cgvec,M_nnz,j0
 !
-      real(r_typ),    dimension(:), allocatable :: a_csr
+      real(r_typ),    dimension(:), allocatable, target :: a_csr
       real(r_typ),    dimension(:), allocatable :: lu_csr
       real(r_typ_sp), dimension(:), allocatable :: lu_csr_sp
       real(r_typ),    dimension(:), allocatable :: a_csr_d
       real(r_typ_sp), dimension(:), allocatable :: a_csr_d_sp
       integer, dimension(:), allocatable :: lu_csr_ja
-      integer, dimension(:), allocatable :: a_csr_ia
-      integer, dimension(:), allocatable :: a_csr_ja
+      integer, dimension(:), allocatable, target :: a_csr_ia
+      integer, dimension(:), allocatable, target :: a_csr_ja
       integer, dimension(:), allocatable :: a_N1
       integer, dimension(:), allocatable :: a_N2
       integer, dimension(:), allocatable :: a_csr_dptr
@@ -1428,14 +1540,14 @@ module matrix_storage_pot2dh_solve
 !
       integer :: N_cgvec,M_nnz
 !
-      real(r_typ),    dimension(:), allocatable :: a_csr
+      real(r_typ),    dimension(:), allocatable, target :: a_csr
       real(r_typ),    dimension(:), allocatable :: lu_csr
       real(r_typ_sp), dimension(:), allocatable :: lu_csr_sp
       real(r_typ),    dimension(:), allocatable :: a_csr_d
       real(r_typ_sp), dimension(:), allocatable :: a_csr_d_sp
       integer, dimension(:), allocatable :: lu_csr_ja
-      integer, dimension(:), allocatable :: a_csr_ia
-      integer, dimension(:), allocatable :: a_csr_ja
+      integer, dimension(:), allocatable, target :: a_csr_ia
+      integer, dimension(:), allocatable, target :: a_csr_ja
       integer, dimension(:), allocatable :: a_N1
       integer, dimension(:), allocatable :: a_N2
       integer, dimension(:), allocatable :: a_csr_dptr
@@ -1499,14 +1611,14 @@ module matrix_storage_divb_solve
 !
       integer :: M_nnz, N_cgvec
 !
-      real(r_typ),    dimension(:), allocatable :: a_csr
+      real(r_typ),    dimension(:), allocatable, target :: a_csr
       real(r_typ),    dimension(:), allocatable :: lu_csr
       real(r_typ_sp), dimension(:), allocatable :: lu_csr_sp
       real(r_typ),    dimension(:), allocatable :: a_csr_d
       real(r_typ_sp), dimension(:), allocatable :: a_csr_d_sp
       integer, dimension(:), allocatable :: lu_csr_ja
-      integer, dimension(:), allocatable :: a_csr_ia
-      integer, dimension(:), allocatable :: a_csr_ja
+      integer, dimension(:), allocatable, target :: a_csr_ia
+      integer, dimension(:), allocatable, target :: a_csr_ja
       integer, dimension(:), allocatable :: a_N1
       integer, dimension(:), allocatable :: a_N2
       integer, dimension(:), allocatable :: a_csr_dptr
@@ -1551,14 +1663,14 @@ module matrix_storage_v_solve
 !
       integer :: N_vr,N_vt,N_vp,N_cgvec,M_nzz
 !
-      real(r_typ),    dimension(:), allocatable :: a_csr
+      real(r_typ),    dimension(:), allocatable, target :: a_csr
       real(r_typ),    dimension(:), allocatable :: lu_csr
       real(r_typ_sp), dimension(:), allocatable :: lu_csr_sp
       real(r_typ),    dimension(:), allocatable :: a_csr_d
       real(r_typ_sp), dimension(:), allocatable :: a_csr_d_sp
       integer, dimension(:), allocatable :: lu_csr_ja
-      integer, dimension(:), allocatable :: a_csr_ia
-      integer, dimension(:), allocatable :: a_csr_ja
+      integer, dimension(:), allocatable, target :: a_csr_ia
+      integer, dimension(:), allocatable, target :: a_csr_ja
       integer, dimension(:), allocatable :: a_N1
       integer, dimension(:), allocatable :: a_N2
       integer, dimension(:), allocatable :: a_csr_dptr
@@ -1583,14 +1695,14 @@ module matrix_storage_v_par_solve
 !
       integer :: M_nnz, N_cgvec
 !
-      real(r_typ),    dimension(:), allocatable :: a_csr
+      real(r_typ),    dimension(:), allocatable, target :: a_csr
       real(r_typ),    dimension(:), allocatable :: lu_csr
       real(r_typ_sp), dimension(:), allocatable :: lu_csr_sp
       real(r_typ),    dimension(:), allocatable :: a_csr_d
       real(r_typ_sp), dimension(:), allocatable :: a_csr_d_sp
       integer, dimension(:), allocatable :: lu_csr_ja
-      integer, dimension(:), allocatable :: a_csr_ia
-      integer, dimension(:), allocatable :: a_csr_ja
+      integer, dimension(:), allocatable, target :: a_csr_ia
+      integer, dimension(:), allocatable, target :: a_csr_ja
       integer, dimension(:), allocatable :: a_N1
       integer, dimension(:), allocatable :: a_N2
       integer, dimension(:), allocatable :: a_csr_dptr
@@ -1615,14 +1727,14 @@ module matrix_storage_t_solve
 !
       integer :: M_nnz, N_cgvec
 !
-      real(r_typ),    dimension(:), allocatable :: a_csr
+      real(r_typ),    dimension(:), allocatable, target :: a_csr
       real(r_typ),    dimension(:), allocatable :: lu_csr
       real(r_typ_sp), dimension(:), allocatable :: lu_csr_sp
       real(r_typ),    dimension(:), allocatable :: a_csr_d
       real(r_typ_sp), dimension(:), allocatable :: a_csr_d_sp
       integer, dimension(:), allocatable :: lu_csr_ja
-      integer, dimension(:), allocatable :: a_csr_ia
-      integer, dimension(:), allocatable :: a_csr_ja
+      integer, dimension(:), allocatable, target :: a_csr_ia
+      integer, dimension(:), allocatable, target :: a_csr_ja
       integer, dimension(:), allocatable :: a_N1
       integer, dimension(:), allocatable :: a_N2
       integer, dimension(:), allocatable :: a_csr_dptr
@@ -1755,7 +1867,23 @@ module timing
       integer, parameter :: TIME_POT2DH  =23
       integer, parameter :: TIME_IO      =24
       integer, parameter :: TIME_OTHER   =25
-      integer, parameter :: TIME_TOTAL   =26
+      integer, parameter :: TIME_CUSPARSE_LOAD=26
+      integer, parameter :: TIME_CUSPARSE_LOAD_V=27
+      integer, parameter :: TIME_CUSPARSE_LOAD_T=28
+      integer, parameter :: TIME_CUSPARSE_LOAD_DIVB=29
+      integer, parameter :: TIME_CUSPARSE_LOAD_POT2D=30
+      integer, parameter :: TIME_CUSPARSE_LOAD_POT2DH=31
+      integer, parameter :: TIME_CUSPARSE_SOLVE_V=32
+      integer, parameter :: TIME_CUSPARSE_SOLVE_T=33
+      integer, parameter :: TIME_CUSPARSE_SOLVE_DIVB=34
+      integer, parameter :: TIME_CUSPARSE_SOLVE_POT2D=35
+      integer, parameter :: TIME_CUSPARSE_SOLVE_POT2DH=36
+      integer, parameter :: TIME_CUSPARSE_UNLOAD_V=37
+      integer, parameter :: TIME_CUSPARSE_UNLOAD_T=38
+      integer, parameter :: TIME_CUSPARSE_UNLOAD_DIVB=39
+      integer, parameter :: TIME_CUSPARSE_UNLOAD_POT2D=40
+      integer, parameter :: TIME_CUSPARSE_UNLOAD_POT2DH=41
+      integer, parameter :: TIME_TOTAL   =42
 !
 ! ****** Number of timer tasks.
 !
@@ -1793,11 +1921,27 @@ module timing
                                         'Time: pot_2dh           ', &
                                         'Time: i/o               ', &
                                         'Time: other             ', &
+                                        'Time: cu_load     ', &
+                                        'Time: cu_load_v   ', &
+                                        'Time: cu_load_t   ', &
+                                        'Time: cu_load_divb', &
+                                        'Time: cu_load_pot2d', &
+                                        'Time: cu_load_pot2dh', &
+                                        'Time: cu_solve_v  ', &
+                                        'Time: cu_solve_t  ', &
+                                        'Time: cu_solve_divb', &
+                                        'Time: cu_solve_pot2d', &
+                                        'Time: cu_solve_pot2dh', &
+                                        'Time: cu_unload_v ', &
+                                        'Time: cu_unload_t ', &
+                                        'Time: cu_unload_divb', &
+                                        'Time: cu_unload_pot2d', &
+                                        'Time: cu_unload_pot2dh', &
                                         'Total time              '/
 !
       data (ttask(i)%active,i=1,ntimers)/ntimers*.false./
       data (ttask(i)%comm  , &
-            i=1,ntimers)/5*.true.,21*.false./
+            i=1,ntimers)/5*.true.,37*.false./
       data ((ttask(i)%ncalls(j),i=1,ntimers),j=1,nlevels)/nd*0/
       data ((ttask(i)%tused (j),i=1,ntimers),j=1,nlevels)/nd*0./
       data ((ttask(i)%tstart(j),i=1,ntimers),j=1,nlevels)/nd*0./
@@ -9932,6 +10076,43 @@ subroutine check_inputs
       if (is_substring(compiler,'nvfortran') .and. &
           is_substring(compiler_flags,'stdpar=gpu')) then
 !
+#ifdef CUSPARSE
+        if (ifprec_v.eq.2) then
+          write (*,*)
+          write (*,*) '### NOTE from CHECK_INPUTS:'
+          write (*,*) '### Preconditioner choice for velocity solve was'
+          write (*,*) '### not compatible with GPU run.'
+          write (*,*) '### Changing to cusparse.'
+          ifprec_v=3
+        end if
+!
+        if (advance_tc.and.ifprec_t.eq.2) then
+          write (*,*)
+          write (*,*) '### NOTE from CHECK_INPUTS:'
+          write (*,*) '### Preconditioner choice for thermal conduction'
+          write (*,*) '### solve was not compatible with GPU run.'
+          write (*,*) '### Changing to cusparse.'
+          ifprec_t=3
+        end if
+!
+        if (ifprec_pot2d.eq.2) then
+          write (*,*)
+          write (*,*) '### NOTE from CHECK_INPUTS:'
+          write (*,*) '### Preconditioner choice for boundary potential'
+          write (*,*) '### field solves was not compatible with GPU run.'
+          write (*,*) '### Changing to cusparse.'
+          ifprec_pot2d=3
+        end if
+!
+        if (ifprec_divb.eq.2) then
+          write (*,*)
+          write (*,*) '### NOTE from CHECK_INPUTS:'
+          write (*,*) '### Preconditioner choice for divergence cleaning'
+          write (*,*) '### of re-meshed field solve was not compatible with'
+          write (*,*) '### GPU run. Changing to cusparse.'
+          ifprec_divb=3
+        end if
+#else
         if (ifprec_v.ne.1) then
           write (*,*)
           write (*,*) '### NOTE from CHECK_INPUTS:'
@@ -9967,6 +10148,7 @@ subroutine check_inputs
           write (*,*) '### GPU run. Changing to diagonal scaling.'
           ifprec_divb=1
         end if
+#endif
 !
       end if
 !
@@ -27274,6 +27456,9 @@ subroutine prec_inv_v (p,p_32)
       use number_types
       use cgcom, ONLY : ifprec_v,ifprec_32
       use matrix_storage_v_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -27281,7 +27466,7 @@ subroutine prec_inv_v (p,p_32)
 !
 !-----------------------------------------------------------------------
 !
-      real(r_typ),    dimension(N_cgvec) :: p
+      real(r_typ),    dimension(N_cgvec), target :: p
       real(r_typ_sp), dimension(N_cgvec) :: p_32
       integer :: i
 !
@@ -27304,10 +27489,35 @@ subroutine prec_inv_v (p,p_32)
         end if
       elseif (ifprec_v.ge.2) then
 !
+#ifdef CUSPARSE
+!
+        if (ifprec_v.eq.3) then
+!$acc host_data use_device(p)
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_V)
+          if (ifprec_32) then
+            call lusol_cusparse_sp(C_LOC(p(1)))
+          else
+            call lusol_cusparse(C_LOC(p(1)))
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_V)
+!$acc end host_data
+        else
+!
+! ****** SGS or ILU Partial-Block-Jacobi:
+!
+          call lusol (N_cgvec,M_nzz,p,p_32,lu_csr,lu_csr_sp, &
+                      lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+!      
+        end if
+!
+#else
+!
 ! ****** SGS or ILU Partial-Block-Jacobi:
 !
         call lusol (N_cgvec,M_nzz,p,p_32,lu_csr,lu_csr_sp, &
                     lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+!
+#endif
 !
       end if
 !
@@ -27324,6 +27534,9 @@ subroutine prec_inv_v_par (p,p_32)
       use number_types
       use cgcom
       use matrix_storage_v_par_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -27331,7 +27544,7 @@ subroutine prec_inv_v_par (p,p_32)
 !
 !-----------------------------------------------------------------------
 !
-      real(r_typ),    dimension(N_cgvec) :: p
+      real(r_typ),    dimension(N_cgvec), target :: p
       real(r_typ_sp), dimension(N_cgvec) :: p_32
       integer :: i
 !
@@ -27357,8 +27570,25 @@ subroutine prec_inv_v_par (p,p_32)
 !
 ! ****** SGS or ILU:
 !
+#ifdef CUSPARSE
+        if (ifprec_v.eq.3) then
+!$acc host_data use_device(p)
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_V)
+          if (ifprec_32) then
+            call lusol_cusparse_sp(C_LOC(p(1)))
+          else
+            call lusol_cusparse(C_LOC(p(1)))
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_V)
+!$acc end host_data
+        else
+          call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
+                      lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+        end if
+#else
         call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
                     lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+#endif
 !
       end if
 !
@@ -27375,6 +27605,9 @@ subroutine prec_inv_t (p,p_32)
       use number_types
       use cgcom
       use matrix_storage_t_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -27382,7 +27615,7 @@ subroutine prec_inv_t (p,p_32)
 !
 !-----------------------------------------------------------------------
 !
-      real(r_typ),    dimension(N_cgvec) :: p
+      real(r_typ),    dimension(N_cgvec), target :: p
       real(r_typ_sp), dimension(N_cgvec) :: p_32
       integer :: i
 !
@@ -27408,8 +27641,25 @@ subroutine prec_inv_t (p,p_32)
 !
 ! ****** SGS or ILU:
 !
+#ifdef CUSPARSE
+        if (ifprec_t.ge.3) then
+!$acc host_data use_device(p)
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_T)
+          if (ifprec_32) then
+            call lusol_cusparse_sp(C_LOC(p(1)))
+          else
+            call lusol_cusparse(C_LOC(p(1)))
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_T)
+!$acc end host_data
+        else
+          call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
+                      lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+        end if
+#else
         call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
                     lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+#endif
 !
       end if
 !
@@ -27427,6 +27677,9 @@ subroutine prec_inv_pot2d (p,p_32)
       use number_types
       use cgcom
       use matrix_storage_pot2d_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -27434,7 +27687,7 @@ subroutine prec_inv_pot2d (p,p_32)
 !
 !-----------------------------------------------------------------------
 !
-      real(r_typ),    dimension(N_cgvec) :: p
+      real(r_typ),    dimension(N_cgvec), target :: p
       real(r_typ_sp), dimension(N_cgvec) :: p_32
       integer :: i
 !
@@ -27460,8 +27713,25 @@ subroutine prec_inv_pot2d (p,p_32)
 !
 ! ****** SGS or ILU:
 !
+#ifdef CUSPARSE
+        if (ifprec_pot2d.eq.3) then
+!$acc host_data use_device(p)
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_POT2D)
+          if (ifprec_32) then
+            call lusol_cusparse_pot2d_sp(C_LOC(p(1)))
+          else
+            call lusol_cusparse_pot2d(C_LOC(p(1)))
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_POT2D)
+!$acc end host_data
+        else
+          call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
+                      lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+        end if
+#else
         call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
                     lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+#endif
 !
       end if
 !
@@ -27479,6 +27749,9 @@ subroutine prec_inv_pot2dh (p,p_32)
       use number_types
       use cgcom, ONLY : ifprec_pot2d,ifprec_32
       use matrix_storage_pot2dh_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -27486,7 +27759,7 @@ subroutine prec_inv_pot2dh (p,p_32)
 !
 !-----------------------------------------------------------------------
 !
-      real(r_typ),    dimension(N_cgvec) :: p
+      real(r_typ),    dimension(N_cgvec), target :: p
       real(r_typ_sp), dimension(N_cgvec) :: p_32
       integer :: i
 !
@@ -27512,8 +27785,25 @@ subroutine prec_inv_pot2dh (p,p_32)
 !
 ! ****** SGS or ILU:
 !
+#ifdef CUSPARSE
+        if (ifprec_pot2d.eq.3) then
+!$acc host_data use_device(p)
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_POT2DH)
+          if (ifprec_32) then
+            call lusol_cusparse_pot2dh_sp(C_LOC(p(1)))
+          else
+            call lusol_cusparse_pot2dh(C_LOC(p(1)))
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_POT2DH)
+!$acc end host_data
+        else
+          call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
+                      lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+        end if
+#else
         call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
                     lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+#endif
 !
       end if
 !
@@ -27567,6 +27857,9 @@ subroutine prec_inv_divb (p,p_32)
       use number_types
       use cgcom, ONLY : ifprec_divb,ifprec_32
       use matrix_storage_divb_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -27574,7 +27867,7 @@ subroutine prec_inv_divb (p,p_32)
 !
 !-----------------------------------------------------------------------
 !
-      real(r_typ),    dimension(N_cgvec) :: p
+      real(r_typ),    dimension(N_cgvec), target :: p
       real(r_typ_sp), dimension(N_cgvec) :: p_32
       integer :: i
 !
@@ -27600,8 +27893,25 @@ subroutine prec_inv_divb (p,p_32)
 !
 ! ****** SGS or ILU:
 !
+#ifdef CUSPARSE
+        if (ifprec_divb.eq.3) then
+!$acc host_data use_device(p)
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_DIVB)
+          if (ifprec_32) then
+            call lusol_cusparse_sp(C_LOC(p(1)))
+          else
+            call lusol_cusparse(C_LOC(p(1)))
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_SOLVE_DIVB)
+!$acc end host_data
+        else
+          call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
+                      lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+        end if
+#else
         call lusol (N_cgvec,M_nnz,p,p_32,lu_csr,lu_csr_sp, &
                     lu_csr_ja,a_N1,a_N2,a_csr_d,a_csr_d_sp)
+#endif
 !
       end if
 !
@@ -29778,6 +30088,9 @@ subroutine load_preconditioner_v_solve
       use cgcom, ONLY : ifprec_v,ifprec_32
       use globals
       use matrix_storage_v_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -29855,6 +30168,52 @@ subroutine load_preconditioner_v_solve
             enddo
           enddo
 !
+#ifdef CUSPARSE
+!
+! ****** Convert LU stored in CSR A to LU matrix in optimized layout.
+!
+          call lu2luopt (N_cgvec,M_nzz,lu_csr,a_csr,a_csr_ia,a_csr_ja, &
+                         lu_csr_ja,a_csr_dptr,a_N1,a_N2)
+!
+! ****** Store inverse of diagonal of LU matrix.
+!
+          do i=1,N_cgvec
+            a_csr_d(i)=one/a_csr(a_csr_dptr(i))
+          enddo
+!
+          if (ifprec_32) then
+            do concurrent (i=1:N_cgvec)
+              a_csr_d_sp(i)=real(a_csr_d(i),r_typ_sp)
+            enddo
+            do concurrent (i=1:M_nzz)
+              lu_csr_sp(i)=real(lu_csr(i),r_typ_sp)
+            enddo
+          end if
+!
+        elseif (ifprec_v.eq.3) then
+!
+          cN=N_cgvec
+          cM=M_nzz
+!
+!$acc host_data use_device(a_csr,a_csr_ja,a_csr_ia)
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_V)
+          if (ifprec_32) then
+            call load_lusol_cusparse_sp (C_LOC(a_csr(1)), &
+                                        C_LOC(a_csr_ia(1)), &
+                                        C_LOC(a_csr_ja(1)),cN,cM)
+          else
+            call load_lusol_cusparse (C_LOC(a_csr(1)), &
+                                     C_LOC(a_csr_ia(1)), &
+                                     C_LOC(a_csr_ja(1)),cN,cM)
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_V)
+!$acc end host_data
+        end if
+!
+      end if
+!
+#else
+!
         elseif (ifprec_v.eq.3) then
 !
 ! ****** Incomplete LU (ILU)
@@ -29892,6 +30251,8 @@ subroutine load_preconditioner_v_solve
         end if
 !
       end if
+!
+#endif
 !
 end subroutine
 !#######################################################################
@@ -30016,6 +30377,9 @@ subroutine load_preconditioner_v_par_solve
       use cgcom, ONLY : ifprec_v,ifprec_32
       use globals
       use matrix_storage_v_par_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -30069,6 +30433,53 @@ subroutine load_preconditioner_v_par_solve
             enddo
           enddo
 !
+#ifdef CUSPARSE
+!
+! ****** Convert LU stored in A to LU matrix in optimized layout.
+!
+          call lu2luopt (N_cgvec,M_nnz,lu_csr,a_csr,a_csr_ia, &
+                         a_csr_ja,lu_csr_ja,a_csr_dptr, &
+                         a_N1,a_N2)
+!
+! ****** Store inverse of diagonal of LU matrix.
+!
+          do i=1,N_cgvec
+            a_csr_d(i)=one/a_csr(a_csr_dptr(i))
+          enddo
+!
+          if (ifprec_32) then
+            do concurrent (i=1:N_cgvec)
+              a_csr_d_sp(i)=real(a_csr_d(i),r_typ_sp)
+            enddo
+            do concurrent (i=1:M_nnz)
+              lu_csr_sp(i)=real(lu_csr(i),r_typ_sp)
+            enddo
+          end if
+!
+        elseif (ifprec_v.eq.3) then
+!
+          cN=N_cgvec
+          cM=M_nnz
+!
+!$acc host_data use_device(a_csr,a_csr_ja,a_csr_ia)
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_V)
+          if (ifprec_32) then
+            call load_lusol_cusparse_sp (C_LOC(a_csr(1)), &
+                                        C_LOC(a_csr_ia(1)), &
+                                        C_LOC(a_csr_ja(1)),cN,cM)
+          else
+            call load_lusol_cusparse (C_LOC(a_csr(1)), &
+                                     C_LOC(a_csr_ia(1)), &
+                                     C_LOC(a_csr_ja(1)),cN,cM)
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_V)
+!$acc end host_data
+        end if
+!
+      end if
+!
+#else
+!
         elseif (ifprec_v.eq.3) then
 !
 ! ****** Incomplete LU (ILU)
@@ -30107,6 +30518,8 @@ subroutine load_preconditioner_v_par_solve
         end if
 !
       end if
+!
+#endif
 !
 end subroutine
 !#######################################################################
@@ -30185,6 +30598,9 @@ subroutine load_preconditioner_divb_solve
       use cgcom, ONLY : ifprec_divb,ifprec_32
       use globals
       use matrix_storage_divb_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -30222,6 +30638,7 @@ subroutine load_preconditioner_divb_solve
 !
 ! ****** Convert A matrix into CSR format:
 !
+!$acc enter data create(a_csr,a_csr_ja,a_csr_dptr)
         call diacsr_divb (N_cgvec,M_nnz,a_dia,a_dia_offsets,a_csr, &
                            a_csr_ja,a_csr_ia,a_csr_dptr,1)
 !
@@ -30237,6 +30654,53 @@ subroutine load_preconditioner_divb_solve
                           a_csr(a_csr_dptr(a_csr_ja(k)))
             enddo
           enddo
+!
+#ifdef CUSPARSE
+!
+! ****** Convert LU stored in A to LU matrix in optimized layout.
+!
+          call lu2luopt (N_cgvec,M_nnz,lu_csr,a_csr,a_csr_ia, &
+                         a_csr_ja,lu_csr_ja,a_csr_dptr, &
+                         a_N1,a_N2)
+!
+! ****** Store inverse of diagonal of LU matrix.
+!
+          do i=1,N_cgvec
+            a_csr_d(i)=one/a_csr(a_csr_dptr(i))
+          enddo
+!
+          if (ifprec_32) then
+            do concurrent (i=1:N_cgvec)
+              a_csr_d_sp(i)=real(a_csr_d(i),r_typ_sp)
+            enddo
+            do concurrent (i=1:M_nnz)
+              lu_csr_sp(i)=real(lu_csr(i),r_typ_sp)
+            enddo
+          end if
+!
+        elseif (ifprec_divb.eq.3) then
+!
+          cN=N_cgvec
+          cM=M_nnz
+!
+!$acc host_data use_device(a_csr,a_csr_ja,a_csr_ia)
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_DIVB)
+          if (ifprec_32) then
+            call load_lusol_cusparse_sp (C_LOC(a_csr(1)), &
+                                        C_LOC(a_csr_ia(1)), &
+                                        C_LOC(a_csr_ja(1)),cN,cM)
+          else
+            call load_lusol_cusparse (C_LOC(a_csr(1)), &
+                                     C_LOC(a_csr_ia(1)), &
+                                     C_LOC(a_csr_ja(1)),cN,cM)
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_DIVB)
+!$acc end host_data
+        end if
+!
+      end if
+!
+#else
 !
         elseif (ifprec_divb.eq.3) then
 !
@@ -30276,6 +30740,8 @@ subroutine load_preconditioner_divb_solve
         end if
 !
       end if
+!
+#endif
 !
 end subroutine
 !#######################################################################
@@ -31235,6 +31701,9 @@ subroutine load_preconditioner_t_solve
       use cgcom, ONLY : ifprec_t,ifprec_32
       use globals
       use matrix_storage_t_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -31288,6 +31757,53 @@ subroutine load_preconditioner_t_solve
             enddo
           enddo
 !
+#ifdef CUSPARSE
+!
+! ****** Convert LU stored in A to LU matrix in optimized layout.
+!
+          call lu2luopt (N_cgvec,M_nnz,lu_csr,a_csr,a_csr_ia, &
+                         a_csr_ja,lu_csr_ja,a_csr_dptr, &
+                         a_N1,a_N2)
+!
+! ****** Store inverse of diagonal of LU matrix.
+!
+          do i=1,N_cgvec
+            a_csr_d(i)=one/a_csr(a_csr_dptr(i))
+          enddo
+!
+          if (ifprec_32) then
+            do concurrent (i=1:N_cgvec)
+              a_csr_d_sp(i)=real(a_csr_d(i),r_typ_sp)
+            enddo
+            do concurrent (i=1:M_nnz)
+              lu_csr_sp(i)=real(lu_csr(i),r_typ_sp)
+            enddo
+          end if
+!
+        elseif (ifprec_t.eq.3) then
+!
+          cN=N_cgvec
+          cM=M_nnz
+!
+!$acc host_data use_device(a_csr,a_csr_ja,a_csr_ia)
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_T)
+          if (ifprec_32) then
+            call load_lusol_cusparse_sp (C_LOC(a_csr(1)), &
+                                        C_LOC(a_csr_ia(1)), &
+                                        C_LOC(a_csr_ja(1)),cN,cM)
+          else
+            call load_lusol_cusparse (C_LOC(a_csr(1)), &
+                                     C_LOC(a_csr_ia(1)), &
+                                     C_LOC(a_csr_ja(1)),cN,cM)
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_T)
+!$acc end host_data
+        end if
+!
+      end if
+!
+#else
+!
         elseif (ifprec_t.eq.3) then
 !
 ! ****** Incomplete LU (ILU)
@@ -31326,6 +31842,8 @@ subroutine load_preconditioner_t_solve
         end if
 !
       end if
+!
+#endif
 !
 end subroutine
 !#######################################################################
@@ -33158,6 +33676,7 @@ subroutine alloc_t_matrix_coefs
         allocate (a_N1(        N_cgvec))
         allocate (a_N2(        N_cgvec))
         allocate (a_csr_dptr(  N_cgvec))
+!$acc enter data create(a_csr,a_csr_ja,a_csr_dptr)
       end if
 !
 end subroutine
@@ -33174,6 +33693,8 @@ subroutine dealloc_t_matrix_coefs
       use matrix_storage_t_solve
       use cgcom, ONLY : ifprec_t,ifprec_32
       use sts
+      use cusparse_interface
+      use timing
 !
 !-----------------------------------------------------------------------
 !
@@ -33193,6 +33714,18 @@ subroutine dealloc_t_matrix_coefs
       endif
 !
       if (ifprec_t.ge.2.and..not.use_sts_tc) then
+#ifdef CUSPARSE
+        if (ifprec_t.eq.3) then
+          if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_T)
+          if (ifprec_32) then
+            call unload_lusol_cusparse_sp
+          else
+            call unload_lusol_cusparse
+          endif
+          if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_T)
+        end if
+!$acc exit data delete(a_csr,a_csr_ja,a_csr_dptr)
+#endif
         if (ifprec_32) then
           deallocate (lu_csr_sp)
           deallocate (a_csr_d_sp)
@@ -33459,6 +33992,44 @@ subroutine alloc_v_matrix_coefs
         allocate (a_N1(       N_cgvec))
         allocate (a_N2(       N_cgvec))
         allocate (a_csr_dptr( N_cgvec))
+!$acc enter data create(a_csr,a_csr_ja,a_csr_dptr)
+      end if
+!
+end subroutine
+!#######################################################################
+      subroutine unload_v_matrix_coefs
+!
+!-----------------------------------------------------------------------
+!
+! ****** Unload the arrays in which the matrix coefficients
+! ****** for the v solve are stored.
+!
+!-----------------------------------------------------------------------
+!
+      use matrix_storage_v_solve
+      use cgcom, ONLY : ifprec_v,ifprec_32
+      use cusparse_interface
+      use timing
+!
+!-----------------------------------------------------------------------
+!
+      implicit none
+!
+!-----------------------------------------------------------------------
+!
+      if (ifprec_v.ge.2) then
+#ifdef CUSPARSE
+        if (ifprec_v.eq.3) then
+!
+          if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_V)
+          if (ifprec_32) then
+            call unload_lusol_cusparse_sp
+          else
+            call unload_lusol_cusparse
+          endif
+          if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_V)
+        end if
+#endif
       end if
 !
 end subroutine
@@ -33498,6 +34069,9 @@ subroutine dealloc_v_matrix_coefs
           deallocate (lu_csr_sp)
           deallocate (a_csr_d_sp)
         end if
+#ifdef CUSPARSE
+!$acc exit data delete(a_csr,a_csr_ja,a_csr_dptr)
+#endif
         deallocate (a_csr)
         deallocate (lu_csr)
         deallocate (a_csr_d)
@@ -33554,9 +34128,45 @@ subroutine alloc_v_par_matrix_coefs
         allocate (a_N1(        N_cgvec))
         allocate (a_N2(        N_cgvec))
         allocate (a_csr_dptr(  N_cgvec))
+!$acc enter data create(a_csr,a_csr_ja,a_csr_dptr)
       end if
 !
 end subroutine
+!#######################################################################
+      subroutine unload_v_par_matrix_coefs
+!
+!-----------------------------------------------------------------------
+!
+! ****** Deallocate the arrays in which the matrix coefficients
+! ****** for the parallel velocity solve are stored.
+!
+!-----------------------------------------------------------------------
+!
+      use cgcom, ONLY : ifprec_v,ifprec_32
+      use cusparse_interface
+      use matrix_storage_v_par_solve
+      use timing
+!
+!-----------------------------------------------------------------------
+!
+      implicit none
+!
+!-----------------------------------------------------------------------
+!
+#ifdef CUSPARSE
+      if (ifprec_v.eq.3) then
+!
+        if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_V)
+        if (ifprec_32) then
+          call unload_lusol_cusparse_sp
+        else
+          call unload_lusol_cusparse
+        endif
+        if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_V)
+      end if
+#endif
+!
+      end subroutine
 !#######################################################################
 subroutine dealloc_v_par_matrix_coefs
 !
@@ -33591,6 +34201,9 @@ subroutine dealloc_v_par_matrix_coefs
           deallocate (lu_csr_sp)
           deallocate (a_csr_d_sp)
         end if
+#ifdef CUSPARSE
+!$acc exit data delete(a_csr,a_csr_ja,a_csr_dptr)
+#endif
         deallocate (a_csr)
         deallocate (lu_csr)
         deallocate (a_csr_d)
@@ -33662,6 +34275,8 @@ subroutine dealloc_divb_matrix_coefs
 !
       use matrix_storage_divb_solve
       use cgcom, ONLY : ifprec_divb,ifprec_32
+      use cusparse_interface
+      use timing
 !
 !-----------------------------------------------------------------------
 !
@@ -33680,6 +34295,18 @@ subroutine dealloc_divb_matrix_coefs
       endif
 !
       if (ifprec_divb.ge.2) then
+#ifdef CUSPARSE
+        if (ifprec_divb.eq.3) then
+          if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_DIVB)
+          if (ifprec_32) then
+            call unload_lusol_cusparse_sp
+          else
+            call unload_lusol_cusparse
+          endif
+          if (use_timer) call timer (TIME_CUSPARSE_UNLOAD_DIVB)
+        end if
+!$acc exit data delete(a_csr,a_csr_ja,a_csr_dptr)
+#endif
         if (ifprec_32) then
           deallocate (lu_csr_sp)
           deallocate (a_csr_d_sp)
@@ -33916,8 +34543,10 @@ subroutine load_pot2d_solve
         a_dia_offsets(4)= 1          ! i+1
         a_dia_offsets(5)=    (ntm1-j0+1) !    j+1
 !
+!$acc enter data copyin(a_dia_offsets)
         allocate (a_csr_ia(1+N_cgvec))
         call getM_nnz_pot2d (N_cgvec,a_dia_offsets,M_nnz,a_csr_ia)
+!$acc enter data copyin(a_csr_ia)
         if (iamp0) then
           write (9,*)
           write (9,*) '### COMMENT from LOAD_POT2D_SOLVE:'
@@ -33975,8 +34604,10 @@ subroutine load_pot2dh_solve
         a_dia_offsets(4)= 1          ! i+1
         a_dia_offsets(5)=    (ntm2)  !    j+1
 !
+!$acc enter data copyin(a_dia_offsets)
         allocate (a_csr_ia(1+N_cgvec))
         call getM_nnz_pot2dh (N_cgvec,a_dia_offsets,M_nnz,a_csr_ia)
+!$acc enter data copyin(a_csr_ia)
         if (iamp0) then
           write (9,*)
           write (9,*) '### COMMENT from LOAD_POT2DH_SOLVE:'
@@ -34314,6 +34945,9 @@ subroutine load_preconditioner_pot2dh_solve
       use cgcom, ONLY : ifprec_pot2d,ifprec_32
       use globals
       use matrix_storage_pot2dh_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -34358,6 +34992,7 @@ subroutine load_preconditioner_pot2dh_solve
 !
 ! ****** Convert A matrix into CSR format:
 !
+!$acc enter data create(a_csr,a_csr_ja,a_csr_dptr)
         call diacsr_pot2dh (N_cgvec,M_nnz,a_dia,a_dia_offsets, &
                             a_csr,a_csr_ja,a_csr_ia,a_csr_dptr)
 !
@@ -34372,6 +35007,52 @@ subroutine load_preconditioner_pot2dh_solve
               a_csr(j)=a_csr(j)/a_csr(a_csr_dptr(a_csr_ja(j)))
             enddo
           enddo
+!
+#ifdef CUSPARSE
+!
+! ****** Convert LU stored in A to LU matrix in optimized layout.
+!
+          call lu2luopt (N_cgvec,M_nnz,lu_csr,a_csr,a_csr_ia,a_csr_ja, &
+                       lu_csr_ja,a_csr_dptr,a_N1,a_N2)
+!
+! ****** Store inverse of diagonal of LU matrix.
+!
+          do i=1,N_cgvec
+            a_csr_d(i)=one/a_csr(a_csr_dptr(i))
+          enddo
+!
+          if (ifprec_32) then
+            do concurrent (i=1:N_cgvec)
+              a_csr_d_sp(i)=real(a_csr_d(i),r_typ_sp)
+            enddo
+            do concurrent (i=1:M_nnz)
+              lu_csr_sp(i)=real(lu_csr(i),r_typ_sp)
+            enddo
+          end if
+!
+        elseif (ifprec_pot2d.eq.3) then
+!
+          cN2=N_cgvec
+          cM2=M_nnz
+!
+!$acc host_data use_device(a_csr,a_csr_ja,a_csr_ia)
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_POT2DH)
+          if (ifprec_32) then
+            call load_lusol_cusparse_pot2dh_sp (C_LOC(a_csr(1)), &
+                                        C_LOC(a_csr_ia(1)), &
+                                        C_LOC(a_csr_ja(1)),cN2,cM2)
+          else
+            call load_lusol_cusparse_pot2dh (C_LOC(a_csr(1)), &
+                                     C_LOC(a_csr_ia(1)), &
+                                     C_LOC(a_csr_ja(1)),cN2,cM2)
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_POT2DH)
+!$acc end host_data
+        end if
+!
+      end if
+!
+#else
 !
         elseif (ifprec_pot2d.eq.3) then
 !
@@ -34410,6 +35091,8 @@ subroutine load_preconditioner_pot2dh_solve
         end if
 !
       end if
+!
+#endif
 !
 end subroutine
 !#######################################################################
@@ -34471,6 +35154,9 @@ subroutine load_preconditioner_pot2d_solve
       use cgcom, ONLY : ifprec_pot2d,ifprec_32
       use globals
       use matrix_storage_pot2d_solve
+      use cusparse_interface
+      use timing
+      use, intrinsic :: iso_c_binding
 !
 !-----------------------------------------------------------------------
 !
@@ -34515,6 +35201,7 @@ subroutine load_preconditioner_pot2d_solve
 !
 ! ****** Convert A matrix into CSR format:
 !
+!$acc enter data create(a_csr,a_csr_ja,a_csr_dptr)
         call diacsr_pot2d (N_cgvec,M_nnz,a_dia,a_dia_offsets, &
                            a_csr,a_csr_ja,a_csr_ia,a_csr_dptr)
 !
@@ -34529,6 +35216,52 @@ subroutine load_preconditioner_pot2d_solve
               a_csr(j)=a_csr(j)/a_csr(a_csr_dptr(a_csr_ja(j)))
             enddo
           enddo
+!
+#ifdef CUSPARSE
+!
+! ****** Convert LU stored in A to LU matrix in optimized layout.
+!
+          call lu2luopt (N_cgvec,M_nnz,lu_csr,a_csr,a_csr_ia,a_csr_ja, &
+                       lu_csr_ja,a_csr_dptr,a_N1,a_N2)
+!
+! ****** Store inverse of diagonal of LU matrix.
+!
+          do i=1,N_cgvec
+            a_csr_d(i)=one/a_csr(a_csr_dptr(i))
+          enddo
+!
+          if (ifprec_32) then
+            do concurrent (i=1:N_cgvec)
+              a_csr_d_sp(i)=real(a_csr_d(i),r_typ_sp)
+            enddo
+            do concurrent (i=1:M_nnz)
+              lu_csr_sp(i)=real(lu_csr(i),r_typ_sp)
+            enddo
+          end if
+!
+        elseif (ifprec_pot2d.eq.3) then
+!
+          cN3=N_cgvec
+          cM3=M_nnz
+!
+!$acc host_data use_device(a_csr,a_csr_ja,a_csr_ia)
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_POT2D)
+          if (ifprec_32) then
+            call load_lusol_cusparse_pot2d_sp (C_LOC(a_csr(1)), &
+                                        C_LOC(a_csr_ia(1)), &
+                                        C_LOC(a_csr_ja(1)),cN3,cM3)
+          else
+            call load_lusol_cusparse_pot2d (C_LOC(a_csr(1)), &
+                                     C_LOC(a_csr_ia(1)), &
+                                     C_LOC(a_csr_ja(1)),cN3,cM3)
+          end if
+          if (use_timer) call timer (TIME_CUSPARSE_LOAD_POT2D)
+!$acc end host_data
+        end if
+!
+      end if
+!
+#else
 !
         elseif (ifprec_pot2d.eq.3) then
 !
@@ -34566,8 +35299,9 @@ subroutine load_preconditioner_pot2d_solve
           enddo
         end if
 !
-!
       end if
+!
+#endif
 !
 end subroutine
 !#######################################################################
@@ -34629,6 +35363,8 @@ subroutine diacsr_pot2d (N,M,Adia,ioff,Acsr,JA,IA,Adptr)
         j0=2
       end if
 !
+!$acc enter data create(ioffok)
+!$acc parallel loop collapse(2) default(present) private(ioffok)
       do mk=2,npm-1
         do mj=j0,ntm1
 ! ***** Set index of value and column indicies array:
@@ -34686,6 +35422,7 @@ subroutine diacsr_pot2d (N,M,Adia,ioff,Acsr,JA,IA,Adptr)
           enddo
         enddo
       enddo
+!$acc exit data delete(ioffok)
 !
 end subroutine
 !#######################################################################
@@ -34842,6 +35579,8 @@ subroutine diacsr_pot2dh (N,M,Adia,ioff,Acsr,JA,IA,Adptr)
 !
 !-----------------------------------------------------------------------
 !
+!$acc enter data create(ioffok)
+!$acc parallel loop collapse(2) default(present) private(ioffok)
       do mk=2,npm1
         do mj=2,ntm1
 ! ******* Set index of value and column indicies array:
@@ -34884,6 +35623,7 @@ subroutine diacsr_pot2dh (N,M,Adia,ioff,Acsr,JA,IA,Adptr)
           enddo
         enddo
       enddo
+!$acc exit data delete(ioffok)
 !
 end subroutine
 !#######################################################################
@@ -36394,6 +37134,7 @@ subroutine advv
 ! ****** Solve the implicit equations.
 !
         call v_solver (rhs,vp)
+        call unload_v_matrix_coefs
 !
       end if
 !
@@ -36486,6 +37227,7 @@ subroutine advv
           coef(i,j,k)=dtime_local2*vis(i,j,k)
         enddo
         call load_matrix_v_solve_implicit
+        call unload_v_matrix_coefs
         call load_preconditioner_v_solve
       else
         do concurrent (k=1:npm, j=1:ntm, i=1:nrm)
@@ -36532,6 +37274,7 @@ subroutine advv
               coef(i,j,k)=dtime_local2*vis(i,j,k)
             enddo
             call load_matrix_v_solve_implicit
+            call unload_v_matrix_coefs
             call load_preconditioner_v_solve
           end if
 !
@@ -36647,6 +37390,7 @@ subroutine advv
         i_ssvisc=i_ssvisc+1
 !
       enddo
+      call unload_v_matrix_coefs
 !
       if (use_timer) call timer (TIME_ADVVISC)
 !
@@ -36850,6 +37594,7 @@ subroutine advv_par
 ! ****** Solve the implicit equations.
 !
         call v_par_solver (rhs,vp_par)
+        call unload_v_par_matrix_coefs
 !
       end if
 !
@@ -36894,6 +37639,7 @@ subroutine advv_par
 ! ****** Solve the implicit equations.
 !
       call v_par_solver (rhs,v_par)
+      call unload_v_par_matrix_coefs
 !
 !-----------------------------------------------------------------------
 ! ****** Viscous dissipation advance.
@@ -36972,6 +37718,7 @@ subroutine advv_par
         i_ssvisc=i_ssvisc+1
 !
       enddo
+      call unload_v_par_matrix_coefs
 !
 ! ****** Project the parallel velocity to the full vector velocity.
 !

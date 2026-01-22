@@ -6,8 +6,24 @@ INCFLAGS = -I<HDF5_INCLUDE_DIR>
 
 LIBFLAGS = -L<HDF5_LIB_DIR> <HDF5_LIB_FLAGS>
 
-all: pchip_module.o mas.o
-	$(FC) $(FRTFLAGS) $(INCFLAGS) pchip_module.o mas.o $(LIBFLAGS) -o mas
+MAS_CUSPARSE = <MAS_CUSPARSE>
+
+ifeq ($(MAS_CUSPARSE),1)
+  CC = <CC>
+  CCFLAGS = <CCFLAGS>
+  IF_DEF = -DCUSPARSE
+  CUSPARSE_OBJS = lusol_cusparse.o lusol_cusparse_sp.o
+else
+  CC = 
+  CCFLAGS = 
+  IF_DEF = 
+  CUSPARSE_OBJS = 
+endif
+
+OBJS = $(CUSPARSE_OBJS) pchip_module.o mas.o
+
+all: $(OBJS)
+	$(FC) $(FRTFLAGS) $(INCFLAGS) $(OBJS) $(LIBFLAGS) -o mas
 	rm *.mod *.o 2>/dev/null
 
 install:
@@ -17,12 +33,22 @@ clean:
 	rm -f mas 2>/dev/null
 	rm -f expmac 2>/dev/null
 	rm -f mas_cpp.f90 2>/dev/null
+	rm -f mas_cpp_preprocessed.f90 2>/dev/null
 	rm -f *.mod *.o 2>/dev/null
 
 mas.o: mas.F90
 	$(FC) expmac.f90 -o expmac
 	./expmac mas.F90 mas_cpp.f90
-	$(FC) $(FRTFLAGS) $(INCFLAGS) -c mas_cpp.f90 -o mas.o
+	$(FC) -E -cpp $(IF_DEF) mas_cpp.f90 > mas_cpp_preprocessed.f90
+	$(FC) $(FRTFLAGS) $(INCFLAGS) -c mas_cpp_preprocessed.f90 -o mas.o
+
+ifeq ($(MAS_CUSPARSE),1)
+  lusol_cusparse.o: lusol_cusparse.c
+	$(CC) -c $(CCFLAGS) $<
+
+  lusol_cusparse_sp.o: lusol_cusparse_sp.c
+	$(CC) -c $(CCFLAGS) $<
+endif
 
 pchip_module.o : pchip_module_v1.0.0.f90
 	$(FC) $(FRTFLAGS) -c pchip_module_v1.0.0.f90 -o pchip_module.o
