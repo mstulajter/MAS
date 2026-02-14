@@ -110,7 +110,7 @@ module ident
       character(*), parameter :: idcode='MAS'
       character(*), parameter :: vers='0.9.8.0'
       character(*), parameter :: update='11/04/2025'
-      character(*), parameter :: branch_vers=''
+      character(*), parameter :: branch_vers='omp'
       character(*), parameter :: source='mas.F90'
 !
 !-----------------------------------------------------------------------
@@ -2312,7 +2312,7 @@ module vars
 ! ****** Kappa cutoff.
 !
       real(r_typ) :: t_cutoff1=500000._r_typ
-!$acc declare create(t_cutoff1)
+!$omp declare target (t_cutoff1)
 !
 ! ****** Number of times to filter kappa.
 !
@@ -3941,7 +3941,7 @@ module alfven_wave_pressure
 end module
 !#######################################################################
 module wtd
-!$acc routine(wtd_rho_factor) seq
+!$omp declare target (wtd_rho_factor)
 !
 !-----------------------------------------------------------------------
 ! ****** Storage and parameters for the WTD model.
@@ -4042,9 +4042,9 @@ module wtd
       logical :: wtd_use_zw_effective_rho_limit=.false.
       real(r_typ) :: zw_effective_rho_limit_lr=log10(160._r_typ)
       real(r_typ) :: zw_effective_rho_limit_lw=0.3_r_typ
-!$acc declare create (wtd_use_zw_effective_rho_limit, &
-!$acc                 zw_effective_rho_limit_lr, &
-!$acc                 zw_effective_rho_limit_lw)
+!$omp declare target (wtd_use_zw_effective_rho_limit, &
+!$omp                 zw_effective_rho_limit_lr, &
+!$omp                 zw_effective_rho_limit_lw)
 !
 ! ****** zw advance has a separate rho_aw (zw_rho_aw).
 ! ****** This will slow down the zw advance by this factor.
@@ -4341,7 +4341,7 @@ module chianti_v71_rad_loss_corona
        -22.307556,-22.287064,-22.266142,-22.244831,-22.223163, &
        -22.201198,-22.178951,-22.156461,-22.133751,-22.110846, &
        -22.087767/
-!$acc declare copyin(log10_Q_table)
+!$omp declare target(log10_Q_table)
 !
 end module
 !#######################################################################
@@ -4416,7 +4416,7 @@ module chianti_v71_rad_loss_photo
        -22.372720,-22.349648,-22.326410,-22.303024,-22.279501, &
        -22.255861,-22.232111,-22.208263,-22.184328,-22.160312, &
        -22.136225/
-!$acc declare copyin(log10_Q_table)
+!$omp declare target(log10_Q_table)
 !
 end module
 !#######################################################################
@@ -4491,7 +4491,7 @@ module chianti_v713_rad_loss_hybrid
        -22.375836,-22.354127,-22.332095,-22.309774,-22.287191, &
        -22.264389,-22.241384,-22.218202,-22.194863,-22.171383, &
        -22.147777/
-!$acc declare copyin(log10_Q_table)
+!$omp declare target(log10_Q_table)
 !
 end module
 !#######################################################################
@@ -5023,7 +5023,7 @@ module outside_interval_interface
 end module
 !#######################################################################
 module boost_interface
-!$acc routine(boost) seq
+!$omp declare target (boost)
       interface
         pure function boost (tempk)
           use number_types
@@ -5035,7 +5035,7 @@ module boost_interface
 end module
 !#######################################################################
 module interp_interface
-!$acc routine(interp) seq
+!$omp declare target (interp)
       interface
         pure subroutine interp (n,x,xv,i,ip1,a,ierr)
           use number_types
@@ -5051,7 +5051,7 @@ module interp_interface
 end module
 !#######################################################################
 module sv2cv_interface
-!$acc routine(sv2cv) seq
+!$omp declare target (sv2cv)
       interface
         pure subroutine sv2cv (ar,at,ap,t,p,ax,ay,az)
           use number_types
@@ -5063,7 +5063,7 @@ module sv2cv_interface
 end module
 !#######################################################################
 module c2s_interface
-!$acc routine(c2s) seq
+!$omp declare target (c2s)
       interface
         pure subroutine c2s (x,y,z,r,t,p)
           use number_types
@@ -5075,7 +5075,7 @@ module c2s_interface
 end module
 !#######################################################################
 module s2c_interface
-!$acc routine(s2c) seq
+!$omp declare target (s2c)
       interface
         pure subroutine s2c (r,t,p,x,y,z)
           use number_types
@@ -5087,7 +5087,7 @@ module s2c_interface
 end module
 !#######################################################################
 module profile_value_interface
-!$acc routine(profile_value) seq
+!$omp declare target (profile_value)
       interface
         pure function profile_value (prof,x)
           use number_types
@@ -5177,12 +5177,12 @@ module mod_eigen_matrix
 !
       type(eigen_type),dimension(n_element):: eigen
       save eigen
-!$acc declare create(eigen)
+!$omp declare target (eigen)
 !
 end module
 !#######################################################################
 module func_solveionization_eigen_interface
-!$acc routine(func_solveionization_eigen) seq
+!$omp declare target (func_solveionization_eigen)
       interface
         pure subroutine func_solveionization_eigen (ichemi,natom,te, &
                                                     rho,f0,dt,ft)
@@ -5200,7 +5200,7 @@ module func_solveionization_eigen_interface
 end module
 !#######################################################################
 module sub_solve_ionic_onestep_interface
-!$acc routine(sub_solve_ionic_onestep) seq
+!$omp declare target (sub_solve_ionic_onestep)
       interface
         pure subroutine sub_solve_ionic_onestep (nelem,natom_array, &
               i_chemi_eigen,te_arr, ne_arr,dt_input,conce_ini,conce_nei)
@@ -7428,11 +7428,11 @@ subroutine start
 ! ****** Set up the mesh.
 !
       call set_mesh
-!$acc enter data copyin(r,dr,rh,drh,t,dt,th,dth,p,dp,ph,dph,st,ct, &
-!$acc              sth,cth,sp,cp,sph,cph,r_i,dr_i,rh_i,drh_i,dt_i, &
-!$acc              dth_i,dp_i,dph_i,st_i,sth_i, &
-!$acc              fl_one,fl_oneh,fl_fac,fl_fach,fl_fac_i,fl_fach_i, &
-!$acc              r_true,rh_true,r_true_i,rh_true_i)
+!$omp target enter data map(to:r,dr,rh,drh,t,dt,th,dth,p,dp,ph,dph,st,ct, &
+!$omp              sth,cth,sp,cp,sph,cph,r_i,dr_i,rh_i,drh_i,dt_i, &
+!$omp              dth_i,dp_i,dph_i,st_i,sth_i, &
+!$omp              fl_one,fl_oneh,fl_fac,fl_fach,fl_fac_i,fl_fach_i, &
+!$omp              r_true,rh_true,r_true_i,rh_true_i)
 !
 ! ****** Print decomposition diagnostics.
 !
@@ -7441,7 +7441,7 @@ subroutine start
 ! ****** Set up the monopole profile.
 !
       call set_brmono
-!$acc enter data copyin(br_mono,grav)
+!$omp target enter data map(to:br_mono,grav)
 !
 ! ****** Write a diagnostic message that the parallel flow model
 ! ****** is being used.
@@ -7511,8 +7511,8 @@ subroutine start
 !
       if (interplanetary_run) then
         call setup_ip_boundaries
-!$acc enter data copyin(br_ip,bt_ip,bp_ip,vr_ip,vt_ip,vp_ip,t_ip,rho_ip)
-!$acc enter data copyin(boundary_frame)
+!$omp target enter data map(to:br_ip,bt_ip,bp_ip,vr_ip,vt_ip,vp_ip,t_ip,rho_ip)
+!$omp target enter data map(to:boundary_frame)
       end if
 !
 ! ****** Set up the initial state.
@@ -7556,16 +7556,16 @@ subroutine start
 ! ****** Add flux ropes (if any).
 !
       if (fluxropes_added) then
-!$acc update device(a%r,a%t,a%p)
+!$omp target update to(a%r,a%t,a%p)
         call fluxrope_add
-!$acc update self(a%r,a%t,a%p,b%r,b%t,b%p,fj%r,fj%t,fj%p)
+!$omp target update from(a%r,a%t,a%p,b%r,b%t,b%p,fj%r,fj%t,fj%p)
       end if
 !
 ! ****** Setup Helicity Pumping.
 !
       if (helicity_pumping) call setup_helicity_pumping
-!$acc enter data copyin(hpump_prof)
-!$acc update device(a_hpump%r,a_hpump%t,a_hpump%p)
+!$omp target enter data map(to:hpump_prof)
+!$omp target update to(a_hpump%r,a_hpump%t,a_hpump%p)
 !
 ! ****** Initialize the plasma.
 !
@@ -7625,17 +7625,17 @@ subroutine start
         if (advance_tp) then
           temp_p(:,:,:)=(he_rho*pres(:,:,:)/rho(:,:,:)- &
                             he_p_e*temp_e(:,:,:))/he_p_p
-!$acc update device(temp_p)
+!$omp target update to(temp_p)
         end if
       else
         temp_e(:,:,:)=temp(:,:,:)
         if (advance_tp) then
           temp_p(:,:,:)=temp_e(:,:,:)
           temp(:,:,:)=(he_p_e*temp_e(:,:,:)+he_p_p*temp_p(:,:,:))/he_p
-!$acc update device(temp_p)
+!$omp target update to(temp_p)
         end if
       end if
-!$acc update device(temp)
+!$omp target update to(temp)
 !
 ! ****** Replace or add fields from file.
 !
@@ -7652,23 +7652,23 @@ subroutine start
          rho_limit(:,:,:)=rho(:,:,:)
          rho(:,:,:)=rho_temp(:,:,:)
          deallocate(rho_temp)
-!$acc update device(rho_limit)
+!$omp target update to(rho_limit)
       end if
 !
 ! ****** Set the resistivity profile.
 !
       call load_resistivity
-!$acc update device(eta_prof)
+!$omp target update to(eta_prof)
 !
 ! ****** Set the viscosity profile.
 !
       call load_viscosity
-!$acc update device(vis_prof)
+!$omp target update to(vis_prof)
 !
 ! ****** Load the kappa mask.
 !
       call load_kappa_mask
-!$acc enter data copyin(kappa_mask)
+!$omp target enter data map(to:kappa_mask)
 !
 ! ****** Set up temperature advance.
 !
@@ -7697,21 +7697,21 @@ subroutine start
 ! ****** Set the initial values of variables driven by time profiles.
 !
       call set_time_profile_variables
-!$acc update self(vis,eta)
+!$omp target update from(vis,eta)
 !
 ! ****** Initialize B and J.
 !
-!$acc update device(a%r,a%t,a%p)
+!$omp target update to(a%r,a%t,a%p)
       call bfroma (a,b,one)
       call jfromb (b,fj)
-!$acc update self(b%r,b%t,b%p,fj%r,fj%t,fj%p)
+!$omp target update from(b%r,b%t,b%p,fj%r,fj%t,fj%p)
 !
       if (freeze_b) then
 !
 ! ****** If the parallel flow algorithm is being used, get b-hat.
 !
         call get_bhat
-!$acc enter data copyin(bhat_r,bhat_t,bhat_p)
+!$omp target enter data map(to:bhat_r,bhat_t,bhat_p)
 !
 ! ****** If the parallel flow model is being used, project the
 ! ****** vector velocity to the parallel velocity, to define it.
@@ -7719,40 +7719,40 @@ subroutine start
 ! ****** perpendicular part of the flow. vb needs to be set here
 ! ****** to ensure v_par_to_v sets v correctly at the boundaries.
 !
-!$acc update device(v%r,v%t,v%p)
+!$omp target update to(v%r,v%t,v%p)
         if (rb0) then
           vb%r0%r(:,:)=AVG(v%r,1,:,:)
           vb%r0%t(:,:)=AVGR(v%t,2,:,:)
           vb%r0%p(:,:)=AVGR(v%p,2,:,:)
-!$acc update device(vb%r0%r,vb%r0%t,vb%r0%p)
+!$omp target update to(vb%r0%r,vb%r0%t,vb%r0%p)
         end if
         if (rb1) then
           vb%r1%r(:,:)=AVG(v%r,nrm,:,:)
           vb%r1%t(:,:)=AVGR(v%t,nr,:,:)
           vb%r1%p(:,:)=AVGR(v%p,nr,:,:)
-!$acc update device(vb%r1%r,vb%r1%t,vb%r1%p)
+!$omp target update to(vb%r1%r,vb%r1%t,vb%r1%p)
         end if
-!$acc update device(v_par)
+!$omp target update to(v_par)
         call project_v_to_v_par (v,v_par)
         call project_v_par_to_v (v_par,v)
-!$acc update self(v%r,v%t,v%p,v_par)
+!$omp target update from(v%r,v%t,v%p,v_par)
         if (restart_run) then
-!$acc update device(v_old%r,v_old%t,v_old%p,v_par_old)
+!$omp target update to(v_old%r,v_old%t,v_old%p,v_par_old)
           call project_v_to_v_par (v_old,v_par_old)
           call project_v_par_to_v (v_par_old,v_old)
-!$acc update self(v_old%r,v_old%t,v_old%p,v_par_old)
+!$omp target update from(v_old%r,v_old%t,v_old%p,v_par_old)
         end if
       end if
 !
 ! ****** Initialize the shear profile.
 !
       call initialize_shear
-!$acc enter data copyin(shear,v_shear_t,v_shear_p)
+!$omp target enter data map(to:shear,v_shear_t,v_shear_p)
 !
 ! ****** Initialize the flow profile.
 !
       call initialize_flow
-!$acc enter data copyin(flow,v_flow_r,v_flow_t,v_flow_p)
+!$omp target enter data map(to:flow,v_flow_r,v_flow_t,v_flow_p)
 !
 ! ****** Initialize the photospheric resistivity profile.
 !
@@ -7765,7 +7765,7 @@ subroutine start
         endif
         allocate (eflux_eta(ntm,npm))
         eflux_eta(:,:)=0.
-!$acc enter data copyin(eta_phot_prof,eflux_eta)
+!$omp target enter data map(to:eta_phot_prof,eflux_eta)
       end if
 !
 ! ****** Allocate eflux arrays.  these are needed here due to
@@ -7789,8 +7789,8 @@ subroutine start
         eflux_vt(:,:)=0.
         eflux_vp(:,:)=0.
         phi_tdc(:,:)=0.
-!$acc enter data copyin(eflux_er,eflux_et,eflux_ep,phi_tdc, &
-!$acc                   eflux_vr,eflux_vt,eflux_vp,br_pbv)
+!$omp target enter data map(to:eflux_er,eflux_et,eflux_ep,phi_tdc, &
+!$omp                   eflux_vr,eflux_vt,eflux_vp,br_pbv)
         if (debug_tdc) then
           allocate (vxbbr0r(nt,np))
           allocate (vxbbr0t(ntm1,np))
@@ -7802,7 +7802,7 @@ subroutine start
           vxbbr0p(:,:)=0.
           div_et(:,:)=0.
           curl_et(:,:)=0.
-!$acc enter data copyin(vxbbr0r,vxbbr0t,vxbbr0p,div_et,curl_et)
+!$omp target enter data map(to:vxbbr0r,vxbbr0t,vxbbr0p,div_et,curl_et)
         end if
       end if
 !
@@ -7810,12 +7810,12 @@ subroutine start
 !
       if (emerging_flux) then
         call initialize_emerging_flux
-!$acc enter data copyin(ef,ef%phi,ef%psi,ef%edrive,ef%vr,ef%vt,ef%vp, &
-!$acc                   ef%phi%er,ef%phi%et,ef%phi%ep,ef%vr_set, &
-!$acc                   ef%psi%er,ef%psi%et,ef%psi%ep,ef%vr_v0, &
-!$acc                   ef%edrive%er,ef%edrive%et,ef%edrive%ep, &
-!$acc                   ef%edrive%vr,ef%edrive%vt,ef%edrive%vp, &
-!$acc                   ef%edrive%e0,ef%phi%e0,ef%psi%e0)
+!$omp target enter data map(to:ef,ef%phi,ef%psi,ef%edrive,ef%vr,ef%vt,ef%vp, &
+!$omp                   ef%phi%er,ef%phi%et,ef%phi%ep,ef%vr_set, &
+!$omp                   ef%psi%er,ef%psi%et,ef%psi%ep,ef%vr_v0, &
+!$omp                   ef%edrive%er,ef%edrive%et,ef%edrive%ep, &
+!$omp                   ef%edrive%vr,ef%edrive%vt,ef%edrive%vp, &
+!$omp                   ef%edrive%e0,ef%phi%e0,ef%psi%e0)
       end if
 !
 ! ****** Initialize the characteristics.
@@ -7850,11 +7850,11 @@ subroutine start
 ! ****** Set radial cut profiles for wave pressures.
       if (advance_pw) then
         call load_awthprof
-!$acc enter data copyin(awthprof)
+!$omp target enter data map(to:awthprof)
       end if
       if (advance_zw) then
         call init_zw
-!$acc update device(zp,zm)
+!$omp target update to(zp,zm)
       end if
       if ((advance_pw.or.advance_zw).and.use_pw_rcut) then
         pw_rcut_main(:)=half*(one+ &
@@ -7862,7 +7862,7 @@ subroutine start
         pw_rcut_half(:)=half*(one+ &
                         tanh((rh(:)-pw_rcut_r0)/pw_rcut_width))
        end if
-!$acc update device(pw_rcut_main,pw_rcut_half)
+!$omp target update to(pw_rcut_main,pw_rcut_half)
 !
 ! ****** Set up charge states arrays.
 !
@@ -7882,14 +7882,14 @@ subroutine start
 !
       if (freeze_b) then
         advance_a=.false.
-!$acc update device(v_par,v_par_old)
+!$omp target update to(v_par,v_par_old)
       end if
-!$acc update device(rho,pres,temp,temp_e,em,ep,a%r,a%t,a%p, &
-!$acc               b%r,b%t,b%p,e%r,e%t,e%p,fj%r,fj%t,fj%p, &
-!$acc               v%r,v%t,v%p,v_old%r,v_old%t,v_old%p, &
-!$acc               rho0i,rho0f,rho0v, &
-!$acc               vb%r0%r,vb%r0%t,vb%r0%p,vb%r1%r,vb%r1%t,vb%r1%p, &
-!$acc               ab%r0%t,ab%r1%t,ab%r0%p,ab%r1%p)
+!$omp target update to(rho,pres,temp,temp_e,em,ep,a%r,a%t,a%p, &
+!$omp               b%r,b%t,b%p,e%r,e%t,e%p,fj%r,fj%t,fj%p, &
+!$omp               v%r,v%t,v%p,v_old%r,v_old%t,v_old%p, &
+!$omp               rho0i,rho0f,rho0v, &
+!$omp               vb%r0%r,vb%r0%t,vb%r0%p,vb%r1%r,vb%r1%t,vb%r1%p, &
+!$omp               ab%r0%t,ab%r1%t,ab%r0%p,ab%r1%p)
 !
 ! ****** Set the initial time step.
 !
@@ -8013,7 +8013,7 @@ subroutine afromb (b,a)
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(psi_br,ar_slice,rhs1,br_slice,rhs2)
+!$omp target enter data map(alloc:psi_br,ar_slice,rhs1,br_slice,rhs2)
 !
 ! ****** Get temporary J from input B.
 !
@@ -8147,7 +8147,7 @@ subroutine afromb (b,a)
       call seam_avec (a)
       call dealloc_avec_bc (abtmp)
 !
-!$acc exit data delete(psi_br,ar_slice,rhs1,br_slice,rhs2)
+!$omp target exit data map(delete:psi_br,ar_slice,rhs1,br_slice,rhs2)
 end subroutine
 !#######################################################################
 subroutine div_clean_b (b)
@@ -8200,7 +8200,7 @@ subroutine div_clean_b (b)
 !
 ! ****** Set up div cleaning solve parameters.
 !
-!$acc enter data create(divb,rhs,phi)
+!$omp target enter data map(alloc:divb,rhs,phi)
       call load_divb_solver
 !
       call alloc_bvec (gradphi)
@@ -8266,7 +8266,7 @@ subroutine div_clean_b (b)
 !     call write_field ('divb_final.h5',IFLD_VIS,divb)
 !
       call dealloc_bvec (gradphi)
-!$acc exit data delete(divb,rhs,phi)
+!$omp target exit data map(delete:divb,rhs,phi)
 !
 end subroutine
 !#######################################################################
@@ -8313,14 +8313,10 @@ subroutine write_mmm_diag (f,capt,capt2)
       max_abs_f=zero
       min_abs_f=huge(zero)
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc  reduction(+:total_abs_f) &
-!$acc  reduction(max:max_abs_f) &
-!$acc  reduction(min:min_abs_f)
-!$omp parallel do collapse(3) default(shared) &
-!$omp reduction(+:total_abs_f) &
-!$omp reduction(max:max_abs_f) &
-!$omp reduction(min:min_abs_f) &
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:total_abs_f) &
+!$omp  reduction(max:max_abs_f) &
+!$omp  reduction(min:min_abs_f)
       do k=map_pm(iproc)%i0,map_pm(iproc)%i1
         do j=map_tm(iproc)%i0,map_tm(iproc)%i1
           do i=map_rm(iproc)%i0,map_rm(iproc)%i1
@@ -8330,7 +8326,7 @@ subroutine write_mmm_diag (f,capt,capt2)
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       call global_sum (total_abs_f)
       call global_max (max_abs_f)
       call global_min (min_abs_f)
@@ -8468,10 +8464,10 @@ subroutine load_temp_e_advance
 !
 ! ****** Get number of non-zeros in A_dia and compute IA:
 !
-!$acc enter data copyin(a_dia_offsets)
+!$omp target enter data map(to:a_dia_offsets)
         allocate (a_csr_ia(1+N_cgvec))
         call getM_nnz_tc (N_cgvec,a_dia_offsets,M_nnz,1,a_csr_ia)
-!$acc enter data copyin(a_csr_ia)
+!$omp target enter data map(to:a_csr_ia)
 !
         if (iamp0) then
           write (9,*)
@@ -8599,11 +8595,11 @@ subroutine load_v_advance
 !
 ! ****** Get number of non-zeros in matrix and compute IA.
 !
-!$acc enter data copyin(a_vr_offsets,a_vt_offsets,a_vp_offsets)
+!$omp target enter data map(to:a_vr_offsets,a_vt_offsets,a_vp_offsets)
         allocate (a_csr_ia(1+N_cgvec))
         call getM_nzz_v (N_cgvec,N_vr,N_vt,a_vr_offsets, &
                          a_vt_offsets,a_vp_offsets,M_nzz,a_csr_ia)
-!$acc enter data copyin(a_csr_ia)
+!$omp target enter data map(to:a_csr_ia)
 !
         if (iamp0) then
           write (9,*)
@@ -8670,10 +8666,10 @@ subroutine load_v_par_advance
 !
 ! ****** Get number of non-zeros in A:
 !
-!$acc enter data copyin(a_dia_offsets)
+!$omp target enter data map(to:a_dia_offsets)
         allocate (a_csr_ia(1+N_cgvec))
         call getM_nnz_v_par (N_cgvec,a_dia_offsets,M_nnz,1,a_csr_ia)
-!$acc enter data copyin(a_csr_ia)
+!$omp target enter data map(to:a_csr_ia)
 !
         if (iamp0) then
           write (9,*)
@@ -8746,10 +8742,10 @@ subroutine load_divb_solver
 !
 ! ****** Get number of non-zeros in A and compute IA:
 !
-!$acc enter data copyin(a_dia_offsets)
+!$omp target enter data map(to:a_dia_offsets)
         allocate (a_csr_ia(1+N_cgvec))
         call getM_nnz_divb (N_cgvec,a_dia_offsets,M_nnz,1,a_csr_ia)
-!$acc enter data copyin(a_csr_ia)
+!$omp target enter data map(to:a_csr_ia)
 !
         if (iamp0) then
           write (9,*)
@@ -8850,7 +8846,7 @@ subroutine fix_loaded_fields
         if (curr_field.eq.'') then
           continue
         elseif (curr_field.eq.'rho') then
-!$acc update device(rho)
+!$omp target update to(rho)
           do concurrent(k=1:np,j=1:nt)
             rho0i(j,k)=rho0
             rho0f(j,k)=rho0i(j,k)
@@ -8861,9 +8857,9 @@ subroutine fix_loaded_fields
           call set_bc_rho (rho,rho0v)
           char_bc1=logbak
           call seam_scalar (rho,nr,nt,np)
-!$acc update self(rho,rho0i,rho0f,rho0v)
+!$omp target update from(rho,rho0i,rho0f,rho0v)
         elseif (curr_field.eq.'tp') then
-!$acc update device(temp_p)
+!$omp target update to(temp_p)
           logbak=char_bc1
           char_bc1=.false.
           call load_bc_temp_p
@@ -8874,14 +8870,14 @@ subroutine fix_loaded_fields
                           'FIX_LOADED_FIELDS',tfloor)
           end if
           call seam_scalar (temp_p,nr,nt,np)
-!$acc update self(temp_p)
+!$omp target update from(temp_p)
         elseif ((curr_field.eq.'t').or.(curr_field.eq.'te')) then
           if (curr_field.eq.'t') then
             temp_e(:,:,:)=temp(:,:,:)
           end if
           logbak=char_bc1
           char_bc1=.false.
-!$acc update device(temp_e)
+!$omp target update to(temp_e)
           call load_bc_temp_e
           call set_bc_temp_e (temp_e,one)
           char_bc1=logbak
@@ -8890,7 +8886,7 @@ subroutine fix_loaded_fields
                           'FIX_LOADED_FIELDS',tfloor)
           end if
           call seam_scalar (temp_e,nr,nt,np)
-!$acc update self(temp_e)
+!$omp target update from(temp_e)
         elseif (curr_field.eq.'vr'.or. &
                curr_field.eq.'vt'.or. &
                curr_field.eq.'vp') then
@@ -9972,11 +9968,11 @@ subroutine check_inputs
 !
 ! ****** Update GPU versions of inputs that are "declared".
 !
-!$acc update device(t_cutoff1, &
-!$acc               wtd_use_zw_effective_rho_limit, &
-!$acc               zw_effective_rho_limit_lr, &
-!$acc               zw_effective_rho_limit_lw)
-!$acc enter data copyin(expert_user_override,natom_list)
+!$omp target update to(t_cutoff1, &
+!$omp               wtd_use_zw_effective_rho_limit, &
+!$omp               zw_effective_rho_limit_lr, &
+!$omp               zw_effective_rho_limit_lw)
+!$omp target enter data map(to:expert_user_override,natom_list)
 !
 end subroutine
 !#######################################################################
@@ -10092,7 +10088,7 @@ subroutine initialize_magnetic_field_from_dipoles
 !
 ! ****** Seam A.
 !
-!$acc update device(a%r,a%t,a%p)
+!$omp target update to(a%r,a%t,a%p)
       call seam_avec (a)
 !
 ! ****** Set the BCs at the poles.
@@ -10102,7 +10098,7 @@ subroutine initialize_magnetic_field_from_dipoles
 ! ****** Get the magnetic field.
 !
       call bfroma (a,b,one)
-!$acc update self(a%r,a%t,a%p,b%r,b%t,b%p)
+!$omp target update from(a%r,a%t,a%p,b%r,b%t,b%p)
 !
 end subroutine
 !#######################################################################
@@ -10326,7 +10322,7 @@ subroutine a_dipole (x0,y0,z0,mx,my,mz,r,t,p,ar,at,ap)
 end subroutine
 !#######################################################################
 pure subroutine c2s (x,y,z,r,t,p)
-!$acc routine(c2s) seq
+!$omp declare target (c2s)
 !
 !-----------------------------------------------------------------------
 !
@@ -10382,7 +10378,7 @@ pure subroutine c2s (x,y,z,r,t,p)
 end subroutine
 !#######################################################################
 pure subroutine s2c (r,t,p,x,y,z)
-!$acc routine(s2c) seq
+!$omp declare target (s2c)
 !
 !-----------------------------------------------------------------------
 !
@@ -10459,7 +10455,7 @@ subroutine cv2sv (ax,ay,az,t,p,ar,at,ap)
 end subroutine
 !#######################################################################
 pure subroutine sv2cv (ar,at,ap,t,p,ax,ay,az)
-!$acc routine(sv2cv) seq
+!$omp declare target (sv2cv)
 !
 !-----------------------------------------------------------------------
 !
@@ -10853,7 +10849,7 @@ subroutine fluxrope_add
 !
 ! ****** Add in the fluxrope vector potential
 !
-!$acc update device(a_fr%r,a_fr%t,a_fr%p)
+!$omp target update to(a_fr%r,a_fr%t,a_fr%p)
       do concurrent (k=1:np, j=1:nt, i=1:nrm1)
         a%r(i,j,k)=a%r(i,j,k)+a_fr%r(i,j,k)
       enddo
@@ -10975,13 +10971,13 @@ subroutine rbsl_add_a (rbsl_fr,a_fr)
 !
 ! ****** Seam A_FR.
 !
-!$acc update device(a_fr%r,a_fr%t,a_fr%p)
+!$omp target update to(a_fr%r,a_fr%t,a_fr%p)
       call seam_avec (a_fr)
 !
 ! ****** Set the BCs at the poles.
 !
       call set_pole_bc_avec (a_fr)
-!$acc update self(a_fr%r,a_fr%t,a_fr%p)
+!$omp target update from(a_fr%r,a_fr%t,a_fr%p)
 !
 end subroutine
 !#######################################################################
@@ -11819,13 +11815,13 @@ subroutine tdm_add_a (tdm_fr,a_tdm)
 !
 ! ****** Seam A_TDM.
 !
-!$acc update device(a_tdm%r,a_tdm%t,a_tdm%p)
+!$omp target update to(a_tdm%r,a_tdm%t,a_tdm%p)
       call seam_avec (a_tdm)
 !
 ! ****** Set the BCs at the poles.
 !
       call set_pole_bc_avec (a_tdm)
-!$acc update self(a_tdm%r,a_tdm%t,a_tdm%p)
+!$omp target update from(a_tdm%r,a_tdm%t,a_tdm%p)
 !
 end subroutine
 !#######################################################################
@@ -12132,13 +12128,13 @@ subroutine fluxrope_add_a_from_file (rope_file,a_fr)
 !
 ! ****** Set boundary conditions at the poles.
 !
-!$acc update device(a_fr%r,a_fr%t,a_fr%p)
+!$omp target update to(a_fr%r,a_fr%t,a_fr%p)
       call set_pole_bc_avec (a_fr)
 !
 ! ****** Seam the array.
 !
       call seam_avec (a_fr)
-!$acc update self(a_fr%r,a_fr%t,a_fr%p)
+!$omp target update from(a_fr%r,a_fr%t,a_fr%p)
 !
 ! ****** Deallocate temporary arrays.
 !
@@ -13354,13 +13350,13 @@ subroutine initialize_hs_equilibrium
 !
 ! ****** Set boundary conditions at the poles.
 !
-!$acc update device(rho,pres)
+!$omp target update to(rho,pres)
       call set_pole_bc_scalar_hhh (rho)
       call set_pole_bc_scalar_hhh (pres)
 !
       call seam_scalar (rho,nr,nt,np)
       call seam_scalar (pres,nr,nt,np)
-!$acc update self(rho,pres)
+!$omp target update from(rho,pres)
 !
 end subroutine
 !#######################################################################
@@ -13757,7 +13753,7 @@ subroutine load_fields_from_file
 !
       if (adding_b) then
         call alloc_avec (abak)
-!$acc update device(a%r,a%t,a%p)
+!$omp target update to(a%r,a%t,a%p)
         call copy_avec (a,abak)
       end if
 !
@@ -13786,8 +13782,8 @@ subroutine load_fields_from_file
             allocate (field_bak(fldtab(ifld)%n1(iproc), &
                                 fldtab(ifld)%n2(iproc), &
                                 fldtab(ifld)%n3(iproc)))
-!$acc enter data create(field_bak)
-!$acc update device(fldtab(ifld)%f)
+!$omp target enter data map(alloc:field_bak)
+!$omp target update to(fldtab(ifld)%f)
             do concurrent(k=1:fldtab(ifld)%n3(iproc), &
                           j=1:fldtab(ifld)%n2(iproc), &
                           i=1:fldtab(ifld)%n1(iproc))
@@ -13798,7 +13794,7 @@ subroutine load_fields_from_file
 ! ****** Now read the field and save it into the global field.
 !
           call read_3d_field (load_fields(i)%fname,ifld)
-!$acc update device(fldtab(ifld)%f)
+!$omp target update to(fldtab(ifld)%f)
 !
 ! ****** If adding the field, add in saved original field.
 !
@@ -13809,9 +13805,9 @@ subroutine load_fields_from_file
               fldtab(ifld)%f(i,j,k)=fldtab(ifld)%f(i,j,k) &
                                    +field_bak(i,j,k)
             enddo
-!$acc exit data delete(field_bak)
+!$omp target exit data map(delete:field_bak)
             deallocate (field_bak)
-!$acc update self(fldtab(ifld)%f)
+!$omp target update from(fldtab(ifld)%f)
           end if
 !
         end if
@@ -13842,13 +13838,13 @@ subroutine load_fields_from_file
             write (9,*) '### Flux-balancing input B field''s r-slices.'
           end if
           allocate (brslice(ntm,npm))
-!$acc update self(b%r,b%t,b%p)
+!$omp target update from(b%r,b%t,b%p)
           do i=1,nr
             brslice(:,:)=b%r(i,:,:)
             call balance_flux2 (brslice,ierr)
             b%r(i,:,:)=brslice(:,:)
           enddo
-!$acc update device(b%r,b%t,b%p)
+!$omp target update to(b%r,b%t,b%p)
           deallocate (brslice)
         elseif (loaded_b_clean_method.eq.3) then
           if (iamp0) then
@@ -13858,14 +13854,14 @@ subroutine load_fields_from_file
             write (9,*) '### AND Flux-balancing B field''s r-slices.'
           end if
           call div_clean_b (b)
-!$acc update self(b%r,b%t,b%p)
+!$omp target update from(b%r,b%t,b%p)
           allocate (brslice(ntm,npm))
           do i=1,nr
             brslice(:,:)=b%r(i,:,:)
             call balance_flux2 (brslice,ierr)
             b%r(i,:,:)=brslice(:,:)
           enddo
-!$acc update device(b%r,b%t,b%p)
+!$omp target update to(b%r,b%t,b%p)
           deallocate (brslice)
         elseif (loaded_b_clean_method.eq.0) then
           if (iamp0) then
@@ -13913,7 +13909,7 @@ subroutine load_fields_from_file
         call bfroma (a,b,zero)
 !
         call jfromb (b,fj)
-!$acc update self(a%r,a%t,a%p,b%r,b%t,b%p,fj%r,fj%t,fj%p)
+!$omp target update from(a%r,a%t,a%p,b%r,b%t,b%p,fj%r,fj%t,fj%p)
       end if
 !
 ! ****** Fix up loaded fields to conform to input file.
@@ -13928,23 +13924,23 @@ subroutine load_fields_from_file
         pres(nrm1:nr,:,:)= &
                       (he_p/he_rho)*temp(nrm1:nr,:,:)*rho(nrm1:nr,:,:)
         cbc1_pb(:,:)=half*(pres(nr,:,:)+pres(nrm1,:,:))
-!$acc update device(cbc1_pb)
+!$omp target update to(cbc1_pb)
       end if
 !
       if (rb0.and.interplanetary_run) then
         rho_ip(:,:)=rho0i(:,:)
         t_ip(:,:)=tr0v(:,:)
-!$acc update device(rho_ip,t_ip)
+!$omp target update to(rho_ip,t_ip)
       end if
 !
-!$acc update device(temp_e,rho)
+!$omp target update to(temp_e,rho)
       call setpt
-!$acc update self(pres,temp)
+!$omp target update from(pres,temp)
 !
 ! ****** Re-initialize the temperature (rho or pres may have changed).
 !
       temp(:,:,:)=(he_rho/he_p)*pres(:,:,:)/rho(:,:,:)
-!$acc update device(temp)
+!$omp target update to(temp)
 !
 end subroutine
 !#######################################################################
@@ -14512,7 +14508,7 @@ subroutine initialize_characteristics
         cbc1_rhob(:,:)=half*(rho(nr,:,:)+rho(nrm1,:,:))
         cbc1_pb(:,:)=half*(pres(nr,:,:)+pres(nrm1,:,:))
         cbc1_ub(:,:)=0.
-!$acc update device(cbc1_rhob,cbc1_pb,cbc1_ub)
+!$omp target update to(cbc1_rhob,cbc1_pb,cbc1_ub)
       end if
 !
 end subroutine
@@ -15603,8 +15599,8 @@ subroutine set_edrive_bc_r0
       call seam_p_2d  (ef%edrive%vt)
       call seam_t_2d  (ef%edrive%vp)
 !
-!$acc update device(ef%edrive%er,ef%edrive%et,ef%edrive%ep)
-!$acc update device(ef%edrive%vr,ef%edrive%vt,ef%edrive%vp)
+!$omp target update to(ef%edrive%er,ef%edrive%et,ef%edrive%ep)
+!$omp target update to(ef%edrive%vr,ef%edrive%vt,ef%edrive%vp)
 end subroutine
 !#######################################################################
 subroutine set_evolving_field_r0 (field_index, &
@@ -16048,9 +16044,9 @@ subroutine potfld_from_mas_br0
         FLUSH (IO_OUT)
       end if
 !
-!$acc update device(a%r,a%t,a%p)
+!$omp target update to(a%r,a%t,a%p)
       call bfroma (a,b,one)
-!$acc update self(b%r,b%t,b%p)
+!$omp target update from(b%r,b%t,b%p)
 !
       br0(:,:)=half*(b%r(1,:,:)+b%r(2,:,:))
 !
@@ -16241,9 +16237,9 @@ subroutine potfld_compute (br0)
         end if
 !
         call alloc_bvec (b_fr)
-!$acc update device(a_fr%r,a_fr%t,a_fr%p)
+!$omp target update to(a_fr%r,a_fr%t,a_fr%p)
         call bfroma (a_fr,b_fr,zero)
-!$acc update self(b_fr%r,b_fr%t,b_fr%p)
+!$omp target update from(b_fr%r,b_fr%t,b_fr%p)
         if (rb0) then
           br0(:,:)=br0(:,:)-half*(b_fr%r(1,:,:)+b_fr%r(2,:,:))
         end if
@@ -16273,7 +16269,7 @@ subroutine potfld_compute (br0)
           rhs2d(ntm1,k)=dv*br0(ntm1,k)
         end if
       enddo
-!$acc enter data copyin(rhs2d)
+!$omp target enter data map(to:rhs2d)
 !
 ! ****** Solve the 2D implicit equations for the boundary potential.
 !
@@ -16282,7 +16278,7 @@ subroutine potfld_compute (br0)
 ! ****** Use a guess equal to zero.
 !
       psi_r0(:,:)=0.
-!$acc enter data copyin(psi_r0)
+!$omp target enter data map(to:psi_r0)
 !
 ! ****** Solve the implicit equations.
 !
@@ -16300,7 +16296,7 @@ subroutine potfld_compute (br0)
       end if
 !
       call pot2d_solver (psi_r0,rhs2d,ierr)
-!$acc exit data delete(rhs2d)
+!$omp target exit data map(delete:rhs2d)
 !
       call check_error_on_any_proc (ierr)
 !
@@ -16317,7 +16313,7 @@ subroutine potfld_compute (br0)
 !
 ! ****** Form the RHS and use a guess equal to zero.
 !
-!$acc enter data create(psi3d,rhs3d)
+!$omp target enter data map(alloc:psi3d,rhs3d)
       do concurrent (k=1:npm, j=1:ntm, i=1:nr)
         rhs3d(i,j,k)=0.
         psi3d(i,j,k)=0.
@@ -16369,14 +16365,14 @@ subroutine potfld_compute (br0)
 ! ****** Get the magnetic field.
 !
       call bfroma (a,b,one)
-!$acc update self(a%r,a%t,a%p,b%r,b%t,b%p)
+!$omp target update from(a%r,a%t,a%p,b%r,b%t,b%p)
 !
 ! ****** The code no longer needs the boundary potential array.
 !
-!$acc exit data delete(psi_r0)
+!$omp target exit data map(delete:psi_r0)
       deallocate (psi_r0)
 !
-!$acc exit data delete(psi3d,rhs3d)
+!$omp target exit data map(delete:psi3d,rhs3d)
 end subroutine
 !#######################################################################
 subroutine read_flux (fname,br0)
@@ -19298,7 +19294,7 @@ subroutine alloc_avec (a)
       allocate (a%t(nr,ntm1,np))
       allocate (a%p(nr,nt,npm1))
 !
-!$acc enter data create(a,a%r,a%t,a%p)
+!$omp target enter data map(alloc:a,a%r,a%t,a%p)
       call zero_avec (a)
 !
 end subroutine
@@ -19325,7 +19321,7 @@ subroutine dealloc_avec (a)
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a%r,a%t,a%p,a)
+!$omp target exit data map(delete:a%r,a%t,a%p,a)
       deallocate (a%r)
       deallocate (a%t)
       deallocate (a%p)
@@ -19358,7 +19354,7 @@ subroutine alloc_bvec (b)
       allocate (b%r(nr,ntm,npm))
       allocate (b%t(nrm,nt,npm))
       allocate (b%p(nrm,ntm,np))
-!$acc enter data create(b,b%r,b%t,b%p)
+!$omp target enter data map(alloc:b,b%r,b%t,b%p)
 !
       call zero_bvec (b)
 !
@@ -19386,7 +19382,7 @@ subroutine dealloc_bvec (b)
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(b%r,b%t,b%p,b)
+!$omp target exit data map(delete:b%r,b%t,b%p,b)
       deallocate (b%r)
       deallocate (b%t)
       deallocate (b%p)
@@ -19418,7 +19414,7 @@ subroutine alloc_vvec (v)
       allocate (v%r(nrm,nt,np))
       allocate (v%t(nr,ntm,np))
       allocate (v%p(nr,nt,npm))
-!$acc enter data create(v,v%r,v%t,v%p)
+!$omp target enter data map(alloc:v,v%r,v%t,v%p)
 !
       call zero_vvec (v)
 !
@@ -19446,7 +19442,7 @@ subroutine dealloc_vvec (v)
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(v%r,v%t,v%p,v)
+!$omp target exit data map(delete:v%r,v%t,v%p,v)
       deallocate (v%r)
       deallocate (v%t)
       deallocate (v%p)
@@ -19479,7 +19475,7 @@ subroutine alloc_hvec (h)
       allocate (h%t(nr,nt,np))
       allocate (h%p(nr,nt,np))
 !
-!$acc enter data create(h,h%r,h%t,h%p)
+!$omp target enter data map(alloc:h,h%r,h%t,h%p)
 !
       call zero_hvec (h)
 !
@@ -19507,7 +19503,7 @@ subroutine dealloc_hvec (h)
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(h%r,h%t,h%p,h)
+!$omp target exit data map(delete:h%r,h%t,h%p,h)
       deallocate (h%r)
       deallocate (h%t)
       deallocate (h%p)
@@ -19541,7 +19537,7 @@ subroutine alloc_avec_bc (a)
       allocate (a%r1%t(ntm1,np))
       allocate (a%r0%p(nt,npm1))
       allocate (a%r1%p(nt,npm1))
-!$acc enter data create(a,a%r0,a%r1,a%r0%t,a%r1%t,a%r0%p,a%r1%p)
+!$omp target enter data map(alloc:a,a%r0,a%r1,a%r0%t,a%r1%t,a%r0%p,a%r1%p)
 !
       do concurrent (k=1:np, j=1:ntm1)
         a%r0%t(j,k)=0.
@@ -19576,7 +19572,7 @@ subroutine dealloc_avec_bc (a)
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a%r0%t,a%r1%t,a%r0%p,a%r1%p,a%r0,a%r1,a)
+!$omp target exit data map(delete:a%r0%t,a%r1%t,a%r0%p,a%r1%p,a%r0,a%r1,a)
       deallocate (a%r0%t)
       deallocate (a%r1%t)
       deallocate (a%r0%p)
@@ -19614,12 +19610,12 @@ subroutine alloc_vvec_bc (v)
       allocate (v%r1%t(ntm,np))
       allocate (v%r0%p(nt,npm))
       allocate (v%r1%p(nt,npm))
-!$acc enter data create(v,v%r0,v%r1, &
-!$acc                   v%r0%r,v%r0%t,v%r0%p,v%r1%r,v%r1%t,v%r1%p)
+!$omp target enter data map(alloc:v,v%r0,v%r1, &
+!$omp                   v%r0%r,v%r0%t,v%r0%p,v%r1%r,v%r1%t,v%r1%p)
       if (freeze_b) then
         allocate (v%r0%par(nt,np))
         allocate (v%r1%par(nt,np))
-!$acc enter data create(v%r0%par,v%r1%par)
+!$omp target enter data map(alloc:v%r0%par,v%r1%par)
       end if
 !
       do concurrent (k=1:np, j=1:nt)
@@ -19642,9 +19638,9 @@ subroutine alloc_vvec_bc (v)
           v%r0%par(j,k)=0.
           v%r1%par(j,k)=0.
         enddo
-!$acc update self(v%r0%par,v%r1%par)
+!$omp target update from(v%r0%par,v%r1%par)
       end if
-!$acc update self(v%r0%r,v%r0%t,v%r0%p,v%r1%r,v%r1%t,v%r1%p)
+!$omp target update from(v%r0%r,v%r0%t,v%r0%p,v%r1%r,v%r1%t,v%r1%p)
 !
 end subroutine
 !#######################################################################
@@ -19671,7 +19667,7 @@ subroutine dealloc_vvec_bc (v)
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(v%r0%r,v%r0%t,v%r0%p,v%r1%r,v%r1%t,v%r1%p)
+!$omp target exit data map(delete:v%r0%r,v%r0%t,v%r0%p,v%r1%r,v%r1%t,v%r1%p)
       deallocate (v%r0%r)
       deallocate (v%r1%r)
       deallocate (v%r0%t)
@@ -19679,11 +19675,11 @@ subroutine dealloc_vvec_bc (v)
       deallocate (v%r0%p)
       deallocate (v%r1%p)
       if (freeze_b) then
-!$acc exit data delete(v%r0%par,v%r1%par)
+!$omp target exit data map(delete:v%r0%par,v%r1%par)
         deallocate (v%r0%par)
         deallocate (v%r1%par)
       end if
-!$acc exit data delete(v%r0,v%r1,v)
+!$omp target exit data map(delete:v%r0,v%r1,v)
 !
 end subroutine
 !#######################################################################
@@ -20352,7 +20348,7 @@ subroutine decompose_domain
 !
       call MPI_Comm_rank (comm_all,iproc,ierr)
       write (iproc_str,'(I12)') iproc
-!$acc enter data copyin(iproc_str)
+!$omp target enter data map(to:iproc_str)
 !
 ! ****** Set the processor rank IPROC0 in communicator COMM_ALL
 ! ****** for the processor that has rank 0 in MPI_COMM_WORLD.
@@ -20898,8 +20894,8 @@ subroutine decompose_mesh
       call gather_mapping_info_tp (maptp_ph)
       call gather_mapping_info_tp (maptp_pm)
 !
-!$acc enter data copyin(map_rh,map_rm,map_th,map_tm,map_ph,map_pm, &
-!$acc                   maptp_th,maptp_tm,maptp_ph,maptp_pm)
+!$omp target enter data map(to:map_rh,map_rm,map_th,map_tm,map_ph,map_pm, &
+!$omp                   maptp_th,maptp_tm,maptp_ph,maptp_pm)
 end subroutine
 !#######################################################################
 subroutine check_mesh_dimensions (nr_g,nt_g,np_g)
@@ -21482,12 +21478,12 @@ subroutine allocate_arrays
       call alloc_avec (fj)
       call alloc_vvec (v)
       call alloc_avec (e)
-!$acc update self(a%r,a%t,a%p,b%r,b%t,b%p,fj%r,fj%t,fj%p)
-!$acc update self(v%r,v%t,v%p,e%r,e%t,e%p)
+!$omp target update from(a%r,a%t,a%p,b%r,b%t,b%p,fj%r,fj%t,fj%p)
+!$omp target update from(v%r,v%t,v%p,e%r,e%t,e%p)
       if (freeze_b) then
         allocate (v_par(nr,nt,np)); v_par(:,:,:)=0.
         allocate (v_par_old(nr,nt,np)); v_par_old(:,:,:)=0.
-!$acc enter data copyin(v_par,v_par_old)
+!$omp target enter data map(to:v_par,v_par_old)
       end if
 !
       allocate (    pres(nr,nt,np)); pres(:,:,:)=0.
@@ -21500,36 +21496,36 @@ subroutine allocate_arrays
       allocate (      em(nr,nt,np)); em(:,:,:)=0.
       allocate (      zp(nr,nt,np)); zp(:,:,:)=0.
       allocate (      zm(nr,nt,np)); zm(:,:,:)=0.
-!$acc enter data copyin(pres,rho,temp,temp_e,temp_e0,heat, &
-!$acc                   ep,em,zp,zm)
+!$omp target enter data map(to:pres,rho,temp,temp_e,temp_e0,heat, &
+!$omp                   ep,em,zp,zm)
 !
       if (advance_tp) then
         allocate ( temp_p(nr,nt,np)); temp_p(:,:,:)=0.
         allocate (temp_p0(nr,nt,np)); temp_p0(:,:,:)=0.
-!$acc enter data copyin(temp_p,temp_p0)
+!$omp target enter data map(to:temp_p,temp_p0)
       end if
 !
       if (advance_fcs) then
         allocate (  rhoold(nr,nt,np)); rhoold(:,:,:)=0.
-!$acc enter data copyin(rhoold)
+!$omp target enter data map(to:rhoold)
       end if
 !
       if (alpha_nocoll.ne.0..or.alpha_nocoll_p.ne.0.) then
         allocate(prof_nocoll(nr)); prof_nocoll(:)=0.
-!$acc enter data copyin(prof_nocoll)
+!$omp target enter data map(to:prof_nocoll)
       end if
 !
       if (advance_tc) then
         allocate (prof_coll(nr)); prof_coll(:)=0.
-!$acc enter data copyin(prof_coll)
+!$omp target enter data map(to:prof_coll)
       end if
       allocate (dqdt(nr,nt,np)); dqdt(:,:,:)=0.
-!$acc enter data copyin(dqdt)
+!$omp target enter data map(to:dqdt)
 !
       allocate (tr0v(nt,np)); tr0v(:,:)=0.
       allocate (tr1v(nt,np)); tr1v(:,:)=0.
       allocate (tr1v_p(nt,np)); tr1v_p(:,:)=0.
-!$acc enter data copyin(tr0v,tr1v,tr1v_p)
+!$omp target enter data map(to:tr0v,tr1v,tr1v_p)
 !
       allocate (rho0i(nt,np)); rho0i(:,:)=0.
       allocate (rho0f(nt,np)); rho0f(:,:)=0.
@@ -21537,14 +21533,14 @@ subroutine allocate_arrays
       allocate (pr0i(nt,np)); pr0i(:,:)=0.
       allocate (pr0f(nt,np)); pr0f(:,:)=0.
       allocate (pr0v(nt,np)); pr0v(:,:)=0.
-!$acc enter data copyin(rho0i,rho0f,rho0v,pr0i,pr0f,pr0v)
+!$omp target enter data map(to:rho0i,rho0f,rho0v,pr0i,pr0f,pr0v)
 !
       if (advance_pw) then
         allocate (epbcr1re(nt,np)); epbcr1re(:,:)=0.
         allocate (epbcr0re(nt,np)); epbcr0re(:,:)=0.
         allocate (embcr1re(nt,np)); embcr1re(:,:)=0.
         allocate (embcr0re(nt,np)); embcr0re(:,:)=0.
-!$acc enter data copyin(embcr0re,embcr1re,epbcr0re,epbcr1re)
+!$omp target enter data map(to:embcr0re,embcr1re,epbcr0re,epbcr1re)
       end if
 !
       if (advance_zw) then
@@ -21552,34 +21548,34 @@ subroutine allocate_arrays
         allocate (zpbcr0re(nt,np)); zpbcr0re(:,:)=0.
         allocate (zmbcr1re(nt,np)); zmbcr1re(:,:)=0.
         allocate (zmbcr0re(nt,np)); zmbcr0re(:,:)=0.
-!$acc enter data copyin(zpbcr1re,zpbcr0re,zmbcr1re,zmbcr0re)
+!$omp target enter data map(to:zpbcr1re,zpbcr0re,zmbcr1re,zmbcr0re)
         if (wtd_use_zw_limit) then
           allocate (zwlimit(nr)); zwlimit(:)=0.
-!$acc enter data copyin(zwlimit)
+!$omp target enter data map(to:zwlimit)
         end if
       end if
 !
       allocate (pw_rcut_main(nrm)); pw_rcut_main(:)=1._r_typ
       allocate (pw_rcut_half(nr)); pw_rcut_half(:)=1._r_typ
-!$acc enter data copyin(pw_rcut_main,pw_rcut_half)
+!$omp target enter data map(to:pw_rcut_main,pw_rcut_half)
 !
       allocate (psi_old(ntm,npm)); psi_old(:,:)=0.
       allocate (psi_n(ntm,npm)); psi_n(:,:)=0.
       allocate (psi_rn(ntm,npm)); psi_rn(:,:)=0.
       allocate (psi_rnp1(ntm,npm)); psi_rnp1(:,:)=0.
       allocate (phi_old(nt,np)); phi_old(:,:)=0.
-!$acc enter data copyin(psi_old,psi_n,psi_rn,psi_rnp1,phi_old)
+!$omp target enter data map(to:psi_old,psi_n,psi_rn,psi_rnp1,phi_old)
 !
       if (ifrholimit) then
         allocate(rho_limit(nr,nt,np)); rho_limit(:,:,:)=0.
-!$acc enter data copyin(rho_limit)
+!$omp target enter data map(to:rho_limit)
       end if
 !
       call alloc_vvec (v_old)
-!$acc update self(v_old%r,v_old%t,v_old%p)
+!$omp target update from(v_old%r,v_old%t,v_old%p)
 !
       call alloc_vvec (vmoxrbb)
-!$acc update self(vmoxrbb%r,vmoxrbb%t,vmoxrbb%p)
+!$omp target update from(vmoxrbb%r,vmoxrbb%t,vmoxrbb%p)
 !
       allocate (eta(nrm,ntm,npm)); eta(:,:,:)=0.
       allocate (etacel(nrm,ntm,npm)); etacel(:,:,:)=0.
@@ -21587,17 +21583,17 @@ subroutine allocate_arrays
       allocate (eta_prof(nrm,ntm,npm)); eta_prof(:,:,:)=0.
       allocate (vis_prof(nrm,ntm,npm)); vis_prof(:,:,:)=0.
       allocate (sifac(nrm,ntm,npm)); sifac(:,:,:)=0.
-!$acc enter data copyin(eta,etacel,vis,eta_prof,vis_prof,sifac)
+!$omp target enter data map(to:eta,etacel,vis,eta_prof,vis_prof,sifac)
 !
       call alloc_avec_bc (ab)
-!$acc update self(ab%r0%t,ab%r1%t,ab%r0%p,ab%r1%p)
+!$omp target update from(ab%r0%t,ab%r1%t,ab%r0%p,ab%r1%p)
 !
       call alloc_vvec_bc (vb)
 !
 ! ****** Allocate storage for the COEF array.
 !
       allocate (coef(nrm,ntm,npm)); coef(:,:,:)=0.
-!$acc enter data copyin(coef)
+!$omp target enter data map(to:coef)
 !
 ! ****** Allocate storage for the upwind resistivity arrays.
 !
@@ -21609,8 +21605,8 @@ subroutine allocate_arrays
         allocate (eta_uw%pr(nr,nt,npm1)); eta_uw%pr(:,:,:)=0.
         allocate (eta_uw%pt(nr,nt,npm1)); eta_uw%pt(:,:,:)=0.
         allocate (eta_uw%i(nrm1,ntm1,npm1)); eta_uw%i(:,:,:)=0.
-!$acc enter data copyin(eta_uw%rt,eta_uw%rp,eta_uw%tr,eta_uw%tp)
-!$acc enter data copyin(eta_uw%pr,eta_uw%pt,eta_uw%i)
+!$omp target enter data map(to:eta_uw%rt,eta_uw%rp,eta_uw%tr,eta_uw%tp)
+!$omp target enter data map(to:eta_uw%pr,eta_uw%pt,eta_uw%i)
       end if
 !
 ! ****** Allocate storage for the characteristics.
@@ -21619,13 +21615,13 @@ subroutine allocate_arrays
         allocate (cbc1_ub(nt,np));   cbc1_ub(:,:)=0.
         allocate (cbc1_rhob(nt,np)); cbc1_rhob(:,:)=0.
         allocate (cbc1_pb(nt,np));   cbc1_pb(:,:)=0.
-!$acc enter data copyin(cbc1_ub,cbc1_rhob,cbc1_pb)
+!$omp target enter data map(to:cbc1_ub,cbc1_rhob,cbc1_pb)
       end if
 !
 ! ****** Allocate storage for the pressure force vectors.
 !
       call alloc_vvec (fpw)
-!$acc update self(fpw%r,fpw%t,fpw%p)
+!$omp target update from(fpw%r,fpw%t,fpw%p)
 !
 end subroutine
 !#######################################################################
@@ -23075,7 +23071,7 @@ subroutine set_pole_bc_avec (a)
 !
       allocate (sum0(nrm1+nr+nr))
       allocate (sum1(nrm1+nr+nr))
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
 !
       do concurrent (i=1:nrm1+nr+nr)
         sum0(i)=0.
@@ -23168,7 +23164,7 @@ subroutine set_pole_bc_avec (a)
         enddo
       end if
 !
-!$acc exit data delete(sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
       deallocate(sum0)
       deallocate(sum1)
 !
@@ -23366,25 +23362,23 @@ subroutine set_pole_bc_avec_tp (at,ap)
 ! ****** At and Ap have only an m=1 component.
 !
       if (tb0.and.(.not.axisymmetric)) then
-!$acc parallel loop default(present) copy(sums0,sumc0) &
-!$acc                         reduction(+:sums0,sumc0)
-!$omp parallel do default(shared) reduction(+:sums0,sumc0)
+!$omp target teams distribute parallel do &
+!$omp  reduction(+:sums0,sumc0)
         do k=2,npm1
           sums0=sums0+ap(2,k)*sp(k)*dp(k)*pl_i*two
           sumc0=sumc0+ap(2,k)*cp(k)*dp(k)*pl_i*two
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
       if (tb1.and.(.not.axisymmetric)) then
-!$acc parallel loop default(present) copy(sums1,sumc1) &
-!$acc                         reduction(+:sums1,sumc1)
-!$omp parallel do default(shared) reduction(+:sums1,sumc1)
+!$omp target teams distribute parallel do &
+!$omp  reduction(+:sums1,sumc1)
         do k=2,npm1
           sums1=sums1+ap(ntm1,k)*sp(k)*dp(k)*pl_i*two
           sumc1=sumc1+ap(ntm1,k)*cp(k)*dp(k)*pl_i*two
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
       buf0=(/sums0,sumc0/)
@@ -23575,7 +23569,7 @@ subroutine set_pole_bc_vvec (v)
 !
       allocate (sum0(nrm+nr+nr))
       allocate (sum1(nrm+nr+nr))
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
 !
       do concurrent (i=1:nrm+nr+nr)
         sum0(i)=0.
@@ -23668,7 +23662,7 @@ subroutine set_pole_bc_vvec (v)
         enddo
       end if
 !
-!$acc exit data delete(sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
 !
       deallocate(sum0)
       deallocate(sum1)
@@ -23868,25 +23862,23 @@ subroutine set_pole_bc_vvec_tp (vt,vp)
 ! ****** vt and vp have only an m=1 component.
 !
       if (tb0.and.(.not.axisymmetric)) then
-!$acc parallel loop default(present) copy(sums0,sumc0) &
-!$acc                         reduction(+:sums0,sumc0)
-!$omp parallel do default(shared) reduction(+:sums0,sumc0)
+!$omp target teams distribute parallel do &
+!$omp  reduction(+:sums0,sumc0)
         do k=2,npm1
           sums0=sums0+vp(2,k)*sp(k)*dp(k)*pl_i*two
           sumc0=sumc0+vp(2,k)*cp(k)*dp(k)*pl_i*two
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
       if (tb1.and.(.not.axisymmetric)) then
-!$acc parallel loop default(present) copy(sums1,sumc1) &
-!$acc                         reduction(+:sums1,sumc1)
-!$omp parallel do default(shared) reduction(+:sums1,sumc1)
+!$omp target teams distribute parallel do &
+!$omp  reduction(+:sums1,sumc1)
         do k=2,npm1
           sums1=sums1+vp(ntm1,k)*sp(k)*dp(k)*pl_i*two
           sumc1=sumc1+vp(ntm1,k)*cp(k)*dp(k)*pl_i*two
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
       buf0=(/sums0,sumc0/)
@@ -24063,7 +24055,7 @@ subroutine set_pole_bc_bvec (b)
 !
       allocate (sum0(nr+nrm1+nrm1))
       allocate (sum1(nr+nrm1+nrm1))
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
 !
       do concurrent (i=1:nr+nrm1+nrm1)
         sum0(i)=0.
@@ -24156,7 +24148,7 @@ subroutine set_pole_bc_bvec (b)
         enddo
       end if
 !
-!$acc exit data delete(sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
 !
       deallocate(sum0)
       deallocate(sum1)
@@ -24346,7 +24338,7 @@ subroutine set_pole_bc_scalar_hhh (a)
 !
 ! ****** Get the local sums (on this processor).
 !
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
       do concurrent (i=1:nr)
         sum0(i)=0.
         sum1(i)=0.
@@ -24392,7 +24384,7 @@ subroutine set_pole_bc_scalar_hhh (a)
         enddo
       end if
 !
-!$acc exit data delete(sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
 end subroutine
 !#######################################################################
 subroutine set_pole_bc_scalar_hhh_cpu (a)
@@ -24505,7 +24497,7 @@ subroutine smooth_poles_scalars (a)
 ! ****** pole, return.
 !
       if (.not.(tb0.or.tb1)) return
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
 !
 ! ****** Get the local sums (on this processor).
 !
@@ -24555,7 +24547,7 @@ subroutine smooth_poles_scalars (a)
           a(i,nt,k)=sum1(i)
         enddo
       end if
-!$acc exit data delete(sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
 !
 end subroutine
 !#######################################################################
@@ -24591,7 +24583,7 @@ subroutine smooth_poles_vr (a)
 ! ****** pole, return.
 !
       if (.not.(tb0.or.tb1)) return
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
 !
 ! ****** Get the local sums (on this processor).
 !
@@ -24642,7 +24634,7 @@ subroutine smooth_poles_vr (a)
         enddo
       end if
 !
-!$acc exit data delete(sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
 end subroutine
 !#######################################################################
 subroutine set_pole_bc_scalar_mmm (a)
@@ -24678,7 +24670,7 @@ subroutine set_pole_bc_scalar_mmm (a)
 ! ****** pole, return.
 !
       if (.not.(tb0.or.tb1)) return
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
 !
 ! ****** Get the local sums (on this processor).
 !
@@ -24726,7 +24718,7 @@ subroutine set_pole_bc_scalar_mmm (a)
           a(i,ntm,k)=sum1(i)
         enddo
       end if
-!$acc exit data delete (sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
 !
 end subroutine
 !#######################################################################
@@ -24764,7 +24756,7 @@ subroutine set_pole_bc_divb_phi (a)
 ! ****** pole, return.
 !
       if (.not.(tb0.or.tb1)) return
-!$acc enter data create(sum0,sum1)
+!$omp target enter data map(alloc:sum0,sum1)
 !
 ! ****** Get the local sums (on this processor).
 !
@@ -24812,7 +24804,7 @@ subroutine set_pole_bc_divb_phi (a)
           a(i,ntm,k)=sum1(i)
         enddo
       end if
-!$acc exit data delete (sum0,sum1)
+!$omp target exit data map(delete:sum0,sum1)
 !
 end subroutine
 !#######################################################################
@@ -24864,21 +24856,19 @@ subroutine set_pole_bc_scalar_tp_hh (a)
 ! ****** A scalar has only an m=0 component.
 !
       if (tb0) then
-!$acc parallel loop default(present) reduction(+:sum0)
-!$omp parallel do default(shared) reduction(+:sum0)
+!$omp target teams distribute parallel do reduction(+:sum0)
         do k=2,npm1
           sum0=sum0+a(2,k)*dph(k)*pl_i*two
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
       if (tb1) then
-!$acc parallel loop default(present) reduction(+:sum1)
-!$omp parallel do default(shared) reduction(+:sum1)
+!$omp target teams distribute parallel do reduction(+:sum1)
         do k=2,npm1
           sum1=sum1+a(ntm1,k)*dph(k)*pl_i*two
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Sum over all processors.
@@ -25026,21 +25016,19 @@ subroutine set_pole_bc_scalar_tp_mm (a)
 ! ****** A scalar has only an m=0 component.
 !
       if (tb0) then
-!$acc parallel loop default(present) reduction(+:sum0)
-!$omp parallel do default(shared) reduction(+:sum0)
+!$omp target teams distribute parallel do reduction(+:sum0)
         do k=2,npm-1
           sum0=sum0+a(1,k)*dp(k)*pl_i
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
       if (tb1) then
-!$acc parallel loop default(present) reduction(+:sum1)
-!$omp parallel do default(shared) reduction(+:sum1)
+!$omp target teams distribute parallel do reduction(+:sum1)
         do k=2,npm-1
           sum1=sum1+a(ntm,k)*dp(k)*pl_i
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Sum over all processors.
@@ -25099,10 +25087,10 @@ subroutine sum_over_phi (n,a0,a1)
 !
 ! ****** Sum over all processors.
 !
-!$acc host_data use_device(a0) if_present
+!$omp target data use_device_ptr(a0)
         call MPI_Allreduce (MPI_IN_PLACE,a0,n,ntype_real, &
                             MPI_SUM,comm_phi,ierr)
-!$acc end host_data
+!$omp end target data
 !
       end if
 !
@@ -25110,10 +25098,10 @@ subroutine sum_over_phi (n,a0,a1)
 !
 ! ****** Sum over all processors.
 !
-!$acc host_data use_device(a1) if_present
+!$omp target data use_device_ptr(a1)
         call MPI_Allreduce (MPI_IN_PLACE,a1,n,ntype_real, &
                             MPI_SUM,comm_phi,ierr)
-!$acc end host_data
+!$omp end target data
 !
       end if
 !
@@ -25372,7 +25360,7 @@ subroutine adva
       allocate (eta_av_ar(nrm1,nt,np))
       allocate (eta_av_at(nr,ntm1,np))
       allocate (eta_av_ap(nr,nt,npm1))
-!$acc enter data create(eta_av_ar,eta_av_at,eta_av_ap)
+!$omp target enter data map(alloc:eta_av_ar,eta_av_at,eta_av_ap)
 !
       do concurrent (k=1:np, j=1:nt, i=1:nrm1)
         eta_av_ar(i,j,k)=0.
@@ -25432,7 +25420,7 @@ subroutine adva
 !
 ! ****** Remove temporary arrays.
 !
-!$acc exit data delete(eta_av_ar,eta_av_at,eta_av_ap)
+!$omp target exit data map(delete:eta_av_ar,eta_av_at,eta_av_ap)
       deallocate (eta_av_ar)
       deallocate (eta_av_at)
       deallocate (eta_av_ap)
@@ -26455,25 +26443,25 @@ subroutine alloc_cg_ax_tmp
         call alloc_vvec (ps_v)
       case (ST_V_PAR)
         allocate (ps_v_par(nr,nt,np))
-!$acc enter data create(ps_v_par)
+!$omp target enter data map(alloc:ps_v_par)
         do concurrent (k=1:np, j=1:nt, i=1:nr)
           ps_v_par(i,j,k)=0.
         enddo
       case (ST_T)
         allocate(ps_t(nr,nt,np))
-!$acc enter data create(ps_t)
+!$omp target enter data map(alloc:ps_t)
         do concurrent (k=1:np, j=1:nt, i=1:nr)
           ps_t(i,j,k)=0.
         enddo
       case (ST_POT2D)
         allocate(ps_pot2d(ntm,npm))
-!$acc enter data create(ps_pot2d)
+!$omp target enter data map(alloc:ps_pot2d)
         do concurrent (k=1:npm, j=1:ntm)
           ps_pot2d(j,k)=0.
         enddo
       case (ST_POT2DH)
         allocate(ps_pot2dh(nt,np))
-!$acc enter data create(ps_pot2dh)
+!$omp target enter data map(alloc:ps_pot2dh)
         do concurrent (k=1:np, j=1:nt)
           ps_pot2dh(j,k)=0.
         enddo
@@ -26481,13 +26469,13 @@ subroutine alloc_cg_ax_tmp
         call alloc_avec (ps_a)
       case (ST_POT3D)
         allocate(ps_pot3d(nr,ntm,npm))
-!$acc enter data create(ps_pot3d)
+!$omp target enter data map(alloc:ps_pot3d)
         do concurrent (k=1:npm, j=1:ntm, i=1:nr)
           ps_pot3d(i,j,k)=0.
         enddo
       case (ST_DIVB)
         allocate(ps_divb(nrm,ntm,npm))
-!$acc enter data create(ps_divb)
+!$omp target enter data map(alloc:ps_divb)
         do concurrent (k=1:npm, j=1:ntm, i=1:nrm)
           ps_divb(i,j,k)=0.
         enddo
@@ -26523,24 +26511,24 @@ subroutine dealloc_cg_ax_tmp
       case (ST_V)
         call dealloc_vvec(ps_v)
       case (ST_V_PAR)
-!$acc exit data delete(ps_v_par)
+!$omp target exit data map(delete:ps_v_par)
         deallocate (ps_v_par)
       case (ST_T)
-!$acc exit data delete(ps_t)
+!$omp target exit data map(delete:ps_t)
         deallocate(ps_t)
       case (ST_POT2D)
-!$acc exit data delete(ps_pot2d)
+!$omp target exit data map(delete:ps_pot2d)
         deallocate(ps_pot2d)
       case (ST_POT2DH)
-!$acc exit data delete(ps_pot2dh)
+!$omp target exit data map(delete:ps_pot2dh)
         deallocate(ps_pot2dh)
       case (ST_A)
         call dealloc_avec(ps_a)
       case (ST_POT3D)
-!$acc exit data delete(ps_pot3d)
+!$omp target exit data map(delete:ps_pot3d)
         deallocate(ps_pot3d)
       case (ST_DIVB)
-!$acc exit data delete(ps_divb)
+!$omp target exit data map(delete:ps_divb)
         deallocate(ps_divb)
       case default
         if (iamp0) then
@@ -26613,12 +26601,12 @@ subroutine cgsolve (x,r,ierr)
 !
       allocate(p_cg(N_CG))
       allocate(ap_cg(N_CG))
-!$acc enter data create(p_cg,ap_cg)
+!$omp target enter data map(alloc:p_cg,ap_cg)
 !
       if (ifprec_32) then
         allocate(p_cg_sp(N_CG))
         allocate(ap_cg_sp(N_CG))
-!$acc enter data create(p_cg_sp,ap_cg_sp)
+!$omp target enter data map(alloc:p_cg_sp,ap_cg_sp)
       end if
 !
       call alloc_cg_ax_tmp
@@ -26644,11 +26632,11 @@ subroutine cgsolve (x,r,ierr)
         epsn=0.
         ierr=0
         call dealloc_cg_ax_tmp
-!$acc exit data delete(p_cg,ap_cg)
+!$omp target exit data map(delete:p_cg,ap_cg)
         deallocate (p_cg)
         deallocate (ap_cg)
         if (ifprec_32) then
-!$acc exit data delete(p_cg_sp,ap_cg_sp)
+!$omp target exit data map(delete:p_cg_sp,ap_cg_sp)
           deallocate (p_cg_sp)
           deallocate (ap_cg_sp)
         end if
@@ -26675,11 +26663,11 @@ subroutine cgsolve (x,r,ierr)
       call err_norm (rdotr,ierr)
       if (ierr.ge.0) then
         call dealloc_cg_ax_tmp
-!$acc exit data delete(p_cg,ap_cg)
+!$omp target exit data map(delete:p_cg,ap_cg)
         deallocate (p_cg)
         deallocate (ap_cg)
         if (ifprec_32) then
-!$acc exit data delete(p_cg_sp,ap_cg_sp)
+!$omp target exit data map(delete:p_cg_sp,ap_cg_sp)
           deallocate (p_cg_sp)
           deallocate (ap_cg_sp)
         end if
@@ -26728,11 +26716,11 @@ subroutine cgsolve (x,r,ierr)
 !
       call dealloc_cg_ax_tmp
 !
-!$acc exit data delete(p_cg,ap_cg)
+!$omp target exit data map(delete:p_cg,ap_cg)
       deallocate (p_cg)
       deallocate (ap_cg)
       if (ifprec_32) then
-!$acc exit data delete(p_cg_sp,ap_cg_sp)
+!$omp target exit data map(delete:p_cg_sp,ap_cg_sp)
         deallocate (p_cg_sp)
         deallocate (ap_cg_sp)
       end if
@@ -28225,10 +28213,8 @@ function cgdot (p,q)
 ! ****** case for the A solve since it is on a unique single-overlap
 ! ****** grid in the main mesh directions.
 !
-!$acc parallel default(present) reduction(+:cgdot)
-!$omp parallel default(shared) reduction(+:cgdot)
-!$acc loop collapse(3) reduction(+:cgdot)
-!$omp do collapse(3) reduction(+:cgdot)
+!$omp target teams reduction(+:cgdot)
+!$omp  distribute parallel do collapse(3) reduction(+:cgdot)
         do k=2,npm1
           do j=2,ntm1
             do i=1,nrm1
@@ -28239,9 +28225,8 @@ function cgdot (p,q)
             enddo
           enddo
         enddo
-!$omp enddo
-!$acc loop collapse(3) reduction(+:cgdot)
-!$omp do collapse(3) reduction(+:cgdot)
+!$omp  end distribute parallel do
+!$omp  distribute parallel do collapse(3) reduction(+:cgdot)
         do k=2,npm1
           do j=jm0,jm1
             do i=2,nrm1
@@ -28253,9 +28238,8 @@ function cgdot (p,q)
             enddo
           enddo
         enddo
-!$omp enddo
-!$acc loop collapse(3) reduction(+:cgdot)
-!$omp do collapse(3) reduction(+:cgdot)
+!$omp  end distribute parallel do
+!$omp  distribute parallel do collapse(3) reduction(+:cgdot)
         do k=1,npm1
           do j=2,ntm1
             do i=2,nrm1
@@ -28268,19 +28252,17 @@ function cgdot (p,q)
             enddo
           enddo
         enddo
-!$omp enddo
-!$omp end parallel
-!$acc end parallel
+!$omp  end distribute parallel do
+!$omp end target teams
       else
 !
 ! ****** For all other solves, this is much easier!
 !
-!$acc parallel loop default(present) reduction(+:cgdot)
-!$omp parallel do default(shared) reduction(+:cgdot)
+!$omp target teams distribute parallel do reduction(+:cgdot)
         do i=1,N_CG
           cgdot=cgdot+p(i)*q(i)
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Sum over all the processors.
@@ -28594,7 +28576,7 @@ subroutine one_plus_curl_curl_a (ps,q)
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(ap0,ap1)
+!$omp target enter data map(alloc:ap0,ap1)
       do concurrent (i=1:nr)
         ap0(i)=0.
         ap1(i)=0.
@@ -28769,7 +28751,7 @@ subroutine one_plus_curl_curl_a (ps,q)
         end if
 !
       enddo
-!$acc exit data delete(ap0,ap1)
+!$omp target exit data map(delete:ap0,ap1)
 !
 end subroutine
 !#######################################################################
@@ -29127,7 +29109,7 @@ subroutine load_matrix_v_solve_implicit
 ! ****** at the poles.  Set STP_I=1/sin(t) with the appropriate
 ! ****** limit at the poles.
 !
-!$acc enter data create(stp_i)
+!$omp target enter data map(alloc:stp_i)
       do concurrent (j=1:ntm)
          if (tb0.and.j.eq.1) then
            stp_i(   1)=five*dt_i(   1)
@@ -29408,7 +29390,7 @@ subroutine load_matrix_v_solve_implicit
         a_p(15,i,j,k)=-a_pp_00p
       enddo
 !
-!$acc exit data delete(stp_i)
+!$omp target exit data map(delete:stp_i)
 end subroutine
 !#######################################################################
 subroutine load_matrix_v_solve_explicit
@@ -29476,7 +29458,7 @@ subroutine load_matrix_v_solve_explicit
 ! ****** at the poles.  Set STP_I=1/sin(t) with the appropriate
 ! ****** limit at the poles.
 !
-!$acc enter data create(stp_i)
+!$omp target enter data map(alloc:stp_i)
       do concurrent (j=1:ntm)
         if (tb0.and.j.eq.1) then
           stp_i(   1)=five*dt_i(   1)
@@ -29763,7 +29745,7 @@ subroutine load_matrix_v_solve_explicit
         a_p(15,i,j,k)=fac*a_pp_00p
       enddo
 !
-!$acc exit data delete(stp_i)
+!$omp target exit data map(delete:stp_i)
 end subroutine
 !#######################################################################
 subroutine load_preconditioner_v_solve
@@ -30525,7 +30507,7 @@ subroutine load_matrix_t_solve_implicit (tc)
       allocate (fkrt(nr,nt,np))
       allocate (fkrp(nr,nt,np))
       allocate (fktp(nr,nt,np))
-!$acc enter data create(fkrr,fktt,fkpp,fkrt,fkrp,fktp)
+!$omp target enter data map(alloc:fkrr,fktt,fkpp,fkrt,fkrp,fktp)
 !
       do concurrent (k=1:np, j=1:nt, i=1:nr)
         fkrr(i,j,k)=0.
@@ -30538,7 +30520,7 @@ subroutine load_matrix_t_solve_implicit (tc)
 !
 ! ****** Set internal points for fk arrays.
 !
-!$acc parallel loop collapse(3) default(present)
+!$omp target teams distribute parallel do collapse(3)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -30574,11 +30556,12 @@ subroutine load_matrix_t_solve_implicit (tc)
           enddo
         enddo
       enddo
+!$omp end target teams distribute parallel do
 !
 ! ****** Boundary points at r=R0.
 !
       if (rb0) then
-!$acc parallel loop collapse(2) default(present)
+!$omp target teams distribute parallel do collapse(2)
         do k=2,npm1
           do j=2,ntm1
             brav=AVGRTP(b%r,   2,j  ,k)
@@ -30618,12 +30601,13 @@ subroutine load_matrix_t_solve_implicit (tc)
             fktp(1,j,k)=two*fktp(1,j,k)-fktp(2,j,k)
           enddo
         enddo
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Boundary points at r=R1.
 !
       if (rb1) then
-!$acc parallel loop collapse(2) default(present)
+!$omp target teams distribute parallel do collapse(2)
         do k=2,npm1
           do j=2,ntm1
             brav=AVGRTP(b%r,  nr,j  ,k)
@@ -30663,6 +30647,7 @@ subroutine load_matrix_t_solve_implicit (tc)
             fktp(nr,j,k)=two*fktp(nr,j,k)-fktp(2,j,k)
           enddo
         enddo
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Apply the radial profile to reduce kappa in the
@@ -30834,7 +30819,7 @@ subroutine load_matrix_t_solve_implicit (tc)
 !
 ! ****** Free temporary fk arrays.
 !
-!$acc exit data delete(fkrr,fktt,fkpp,fkrt,fkrp,fktp)
+!$omp target exit data map(delete:fkrr,fktt,fkpp,fkrt,fkrp,fktp)
       deallocate (fkrr)
       deallocate (fktt)
       deallocate (fkpp)
@@ -30904,7 +30889,7 @@ subroutine load_matrix_t_solve_explicit (tc)
       allocate (fkrt(nr,nt,np))
       allocate (fkrp(nr,nt,np))
       allocate (fktp(nr,nt,np))
-!$acc enter data create(fkrr,fktt,fkpp,fkrt,fkrp,fktp)
+!$omp target enter data map(alloc:fkrr,fktt,fkpp,fkrt,fkrp,fktp)
 !
       do concurrent (k=1:np, j=1:nt, i=1:nr)
         fkrr(i,j,k)=0.
@@ -30917,7 +30902,7 @@ subroutine load_matrix_t_solve_explicit (tc)
 !
 ! ****** Set internal points for fk arrays.
 !
-!$acc parallel loop collapse(3) default(present)
+!$omp target teams distribute parallel do collapse(3)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -30953,11 +30938,12 @@ subroutine load_matrix_t_solve_explicit (tc)
           enddo
         enddo
       enddo
+!$omp end target teams distribute parallel do
 !
 ! ****** Boundary points at r=R0.
 !
       if (rb0) then
-!$acc parallel loop collapse(2) default(present)
+!$omp target teams distribute parallel do collapse(2)
         do k=2,npm1
           do j=2,ntm1
             brav=AVGRTP(b%r,   2,j  ,k)
@@ -30997,12 +30983,13 @@ subroutine load_matrix_t_solve_explicit (tc)
             fktp(1,j,k)=two*fktp(1,j,k)-fktp(2,j,k)
           enddo
         enddo
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Boundary points at r=R1.
 !
       if (rb1) then
-!$acc parallel loop collapse(2) default(present)
+!$omp target teams distribute parallel do collapse(2)
         do k=2,npm1
           do j=2,ntm1
             brav=AVGRTP(b%r,  nr,j  ,k)
@@ -31042,6 +31029,7 @@ subroutine load_matrix_t_solve_explicit (tc)
             fktp(nr,j,k)=two*fktp(nr,j,k)-fktp(2,j,k)
           enddo
         enddo
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Apply the radial profile to reduce kappa in the
@@ -31213,7 +31201,7 @@ subroutine load_matrix_t_solve_explicit (tc)
 !
 ! ****** Free temporary fk arrays.
 !
-!$acc exit data delete(fkrr,fktt,fkpp,fkrt,fkrp,fktp)
+!$omp target exit data map(delete:fkrr,fktt,fkpp,fkrt,fkrp,fktp)
       deallocate (fkrr)
       deallocate (fktt)
       deallocate (fkpp)
@@ -31451,8 +31439,7 @@ subroutine diacsr_tc (N,M,Adia,ioff,Acsr,JA,IA,Adptr,ind)
         x=0
       end if
 !
-!$acc enter data create(ioffok)
-!$acc parallel loop collapse(3) default(present) private(ioffok)
+!$omp target teams distribute parallel do collapse(3) private(ioffok)
       do mk=2,npm1
         do mj=2,ntm1
           do mi=2,nrm1
@@ -31551,7 +31538,7 @@ subroutine diacsr_tc (N,M,Adia,ioff,Acsr,JA,IA,Adptr,ind)
           enddo
         enddo
       enddo
-!$acc exit data delete(ioffok)
+!$omp end target teams distribute parallel do
 !
 end subroutine
 !#######################################################################
@@ -31619,8 +31606,7 @@ subroutine diacsr_v (N,M,Adia_r,Adia_t,Adia_p,ioff_r,ioff_t, &
 !     This makes "local" matrices have no bc info
 !
 ! *** Add r-rows:
-!$acc enter data create(ioffok)
-!$acc parallel loop collapse(3) default(present) private(ioffok)
+!$omp target teams distribute parallel do collapse(3) private(ioffok)
       do mk=2,npm1
         do mj=2,ntm1
           do mi=2,nrm-1
@@ -31680,10 +31666,11 @@ subroutine diacsr_v (N,M,Adia_r,Adia_t,Adia_p,ioff_r,ioff_t, &
           enddo
         enddo
       enddo
+!$omp end target teams distribute parallel do
 !
 ! *** Add t-rows:
 !
-!$acc parallel loop collapse(3) default(present) private(ioffok)
+!$omp target teams distribute parallel do collapse(3) private(ioffok)
       do mk=2,npm1
         do mj=2,ntm-1
           do mi=2,nrm1
@@ -31738,10 +31725,11 @@ subroutine diacsr_v (N,M,Adia_r,Adia_t,Adia_p,ioff_r,ioff_t, &
           enddo
         enddo
       enddo
+!$omp end target teams distribute parallel do
 !
 ! *** Add p-rows:
 !
-!$acc parallel loop collapse(3) default(present) private(ioffok)
+!$omp target teams distribute parallel do collapse(3) private(ioffok)
       do mk=2,npm-1
         do mj=2,ntm1
           do mi=2,nrm1
@@ -31797,7 +31785,7 @@ subroutine diacsr_v (N,M,Adia_r,Adia_t,Adia_p,ioff_r,ioff_t, &
           enddo
         enddo
       enddo
-!$acc exit data delete(ioffok)
+!$omp end target teams distribute parallel do
 !
 end subroutine
 !#######################################################################
@@ -31869,8 +31857,7 @@ subroutine diacsr_v_par (N,M,Adia,ioff,Acsr,JA,IA,Adptr,ind)
         x=0
       end if
 !
-!$acc enter data create(ioffok)
-!$acc parallel loop collapse(3) default(present) private(ioffok)
+!$omp target teams distribute parallel do collapse(3) private(ioffok)
       do mk=2,npm1
         do mj=2,ntm1
           do mi=2,nrm1
@@ -31961,7 +31948,7 @@ subroutine diacsr_v_par (N,M,Adia,ioff,Acsr,JA,IA,Adptr,ind)
           enddo
         enddo
       enddo
-!$acc exit data delete(ioffok)
+!$omp end target teams distribute parallel do
 !
 end subroutine
 !#######################################################################
@@ -32040,8 +32027,7 @@ subroutine diacsr_divb (N,M,Adia,ioff,Acsr,JA,IA,Adptr,ind)
         x=0
       end if
 !
-!$acc enter data create(ioffok)
-!$acc parallel loop collapse(3) default(present) private(ioffok)
+!$omp target teams distribute parallel do collapse(3) private(ioffok)
       do mk=2,npm-1
         do mj=2,ntm-1
           do mi=i0,nrm1
@@ -32132,7 +32118,7 @@ subroutine diacsr_divb (N,M,Adia,ioff,Acsr,JA,IA,Adptr,ind)
           enddo
         enddo
       enddo
-!$acc exit data delete(ioffok)
+!$omp end target teams distribute parallel do
 !
 end subroutine
 !#######################################################################
@@ -32915,7 +32901,7 @@ subroutine load_sts_coeffs_rkl2 (dtime_current,dtime_exp)
         sts_gj(j)=-(one-sts_b(j-1))*sts_ubj(j)
       enddo
 !
-!$acc enter data copyin(sts_uj,sts_vj,sts_ubj,sts_gj,sts_b)
+!$omp target enter data map(to:sts_uj,sts_vj,sts_ubj,sts_gj,sts_b)
 end subroutine
 !#######################################################################
 subroutine load_sts_coeffs_rkl1 (dtime_current,dtime_exp)
@@ -32984,7 +32970,7 @@ subroutine load_sts_coeffs_rkl1 (dtime_current,dtime_exp)
         sts_ubj(j)=((two*j-one)/j)*two/(sts_s*sts_s+sts_s)
       enddo
 !
-!$acc enter data copyin(sts_uj,sts_vj,sts_ubj)
+!$omp target enter data map(to:sts_uj,sts_vj,sts_ubj)
 end subroutine
 !#######################################################################
 subroutine load_sts_coeffs_rkg2 (dtime_current,dtime_exp)
@@ -33095,7 +33081,7 @@ subroutine load_sts_coeffs_rkg2 (dtime_current,dtime_exp)
         sts_gj(j)=(half*j*(j+one)*sts_b(j-1)-one)*sts_ubj(j)
       enddo
 !
-!$acc enter data copyin(sts_uj,sts_vj,sts_ubj,sts_gj,sts_b)
+!$omp target enter data map(to:sts_uj,sts_vj,sts_ubj,sts_gj,sts_b)
 end subroutine
 !#######################################################################
 subroutine alloc_t_matrix_coefs
@@ -33123,7 +33109,7 @@ subroutine alloc_t_matrix_coefs
 !-----------------------------------------------------------------------
 !
       allocate (a_dia(19,2:nrm1,2:ntm1,2:npm1))
-!$acc enter data create(a_dia)
+!$omp target enter data map(alloc:a_dia)
 !
       do concurrent (k=2:npm1, j=2:ntm1, i=2:nrm1, l=1:19)
         a_dia(l,i,j,k)=0.
@@ -33131,13 +33117,13 @@ subroutine alloc_t_matrix_coefs
 !
       if (ifprec_32) then
         allocate (a_dia_i_sp(N_cgvec))
-!$acc enter data create(a_dia_i_sp)
+!$omp target enter data map(alloc:a_dia_i_sp)
         do concurrent (i=1:N_cgvec)
           a_dia_i_sp(i)=0.
         enddo
       else
         allocate (a_dia_i(N_cgvec))
-!$acc enter data create(a_dia_i)
+!$omp target enter data map(alloc:a_dia_i)
         do concurrent (i=1:N_cgvec)
           a_dia_i(i)=0.
         enddo
@@ -33181,14 +33167,14 @@ subroutine dealloc_t_matrix_coefs
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a_dia)
+!$omp target exit data map(delete:a_dia)
       deallocate (a_dia)
 !
       if (ifprec_32) then
-!$acc exit data delete(a_dia_i_sp)
+!$omp target exit data map(delete:a_dia_i_sp)
         deallocate (a_dia_i_sp)
       else
-!$acc exit data delete(a_dia_i)
+!$omp target exit data map(delete:a_dia_i)
         deallocate (a_dia_i)
       endif
 !
@@ -33232,7 +33218,7 @@ subroutine alloc_a_matrix_coefs
 !-----------------------------------------------------------------------
 !
       allocate (a_dia_i(N_cgvec))
-!$acc enter data create(a_dia_i)
+!$omp target enter data map(alloc:a_dia_i)
       do concurrent (i=1:N_cgvec)
         a_dia_i(i)=0.
       enddo
@@ -33256,7 +33242,7 @@ subroutine dealloc_a_matrix_coefs
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a_dia_i)
+!$omp target exit data map(delete:a_dia_i)
       deallocate (a_dia_i)
 !
 end subroutine
@@ -33293,7 +33279,7 @@ subroutine load_sts (dtime_current)
       allocate (ykm1(N_CG))
       allocate (ukm1(N_CG))
       allocate (ukm2(N_CG))
-!$acc enter data create(u0,dty0,ykm1,ukm1,ukm2)
+!$omp target enter data map(alloc:u0,dty0,ykm1,ukm1,ukm2)
 !
       call alloc_cg_ax_tmp
 !
@@ -33365,7 +33351,7 @@ subroutine unload_sts
 !
 ! ****** Deallocate the scratch arrays.
 !
-!$acc exit data delete (u0,dty0,ykm1,ukm1,ukm2)
+!$omp target exit data map(delete:u0,dty0,ykm1,ukm1,ukm2)
       deallocate (  u0)
       deallocate (dty0)
       deallocate (ykm1)
@@ -33374,12 +33360,12 @@ subroutine unload_sts
 !
 ! ****** Deallocate the STS coefficent arrays.
 !
-!$acc exit data delete (sts_uj,sts_vj,sts_ubj)
+!$omp target exit data map(delete:sts_uj,sts_vj,sts_ubj)
       deallocate (sts_uj)
       deallocate (sts_vj)
       deallocate (sts_ubj)
       if (sts_type.ge.2) then
-!$acc exit data delete (sts_gj,sts_b)
+!$omp target exit data map(delete:sts_gj,sts_b)
         deallocate (sts_gj)
         deallocate (sts_b)
       end if
@@ -33416,7 +33402,7 @@ subroutine alloc_v_matrix_coefs
       allocate (a_r(15, 2:nrm-1, 2:ntm1,  2:npm1  ))
       allocate (a_t(15, 2:nrm1,  2:ntm-1, 2:npm1  ))
       allocate (a_p(15, 2:nrm1,  2:ntm1,  2:npm-1 ))
-!$acc enter data create(a_r,a_t,a_p)
+!$omp target enter data map(alloc:a_r,a_t,a_p)
 !
       do concurrent (k=2:npm1, j=2:ntm1, i=2:nrm-1, l=1:15)
         a_r(l,i,j,k)=0.
@@ -33432,13 +33418,13 @@ subroutine alloc_v_matrix_coefs
 !
       if (ifprec_32) then
         allocate (a_dia_i_sp(N_cgvec))
-!$acc enter data create(a_dia_i_sp)
+!$omp target enter data map(alloc:a_dia_i_sp)
         do concurrent (i=1:N_cgvec)
           a_dia_i_sp(i)=0.
         enddo
       else
         allocate (a_dia_i(N_cgvec))
-!$acc enter data create(a_dia_i)
+!$omp target enter data map(alloc:a_dia_i)
         do concurrent (i=1:N_cgvec)
           a_dia_i(i)=0.
         enddo
@@ -33481,15 +33467,15 @@ subroutine dealloc_v_matrix_coefs
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a_r,a_t,a_p)
+!$omp target exit data map(delete:a_r,a_t,a_p)
       deallocate (a_r)
       deallocate (a_t)
       deallocate (a_p)
       if (ifprec_32) then
-!$acc exit data delete(a_dia_i_sp)
+!$omp target exit data map(delete:a_dia_i_sp)
         deallocate (a_dia_i_sp)
       else
-!$acc exit data delete(a_dia_i)
+!$omp target exit data map(delete:a_dia_i)
         deallocate (a_dia_i)
       endif
 !
@@ -33530,13 +33516,13 @@ subroutine alloc_v_par_matrix_coefs
 !-----------------------------------------------------------------------
 !
       allocate (a_dia(7,2:nrm1,2:ntm1,2:npm1))
-!$acc enter data create(a_dia)
+!$omp target enter data map(alloc:a_dia)
       if (ifprec_32) then
         allocate (a_dia_i_sp(N_cgvec))
-!$acc enter data create(a_dia_i_sp)
+!$omp target enter data map(alloc:a_dia_i_sp)
       else
         allocate (a_dia_i(N_cgvec))
-!$acc enter data create(a_dia_i)
+!$omp target enter data map(alloc:a_dia_i)
       endif
 !
 ! ****** Allocate CSR storage of matrix and LU preconditioner:
@@ -33576,13 +33562,13 @@ subroutine dealloc_v_par_matrix_coefs
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a_dia)
+!$omp target exit data map(delete:a_dia)
       deallocate (a_dia)
       if (ifprec_32) then
-!$acc exit data delete(a_dia_i_sp)
+!$omp target exit data map(delete:a_dia_i_sp)
         deallocate (a_dia_i_sp)
       else
-!$acc exit data delete(a_dia_i)
+!$omp target exit data map(delete:a_dia_i)
         deallocate (a_dia_i)
       endif
 !
@@ -33623,13 +33609,13 @@ subroutine alloc_divb_matrix_coefs
 !-----------------------------------------------------------------------
 !
       allocate (a_dia(7,i0:nrm1,2:ntm-1,2:npm-1))
-!$acc enter data create(a_dia)
+!$omp target enter data map(alloc:a_dia)
       if (ifprec_32) then
         allocate (a_dia_i_sp(N_cgvec))
-!$acc enter data create(a_dia_i_sp)
+!$omp target enter data map(alloc:a_dia_i_sp)
       else
         allocate (a_dia_i(N_cgvec))
-!$acc enter data create(a_dia_i)
+!$omp target enter data map(alloc:a_dia_i)
       endif
 !
 ! ****** Allocate CSR storage of matrix and LU preconditioner:
@@ -33669,13 +33655,13 @@ subroutine dealloc_divb_matrix_coefs
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a_dia)
+!$omp target exit data map(delete:a_dia)
       deallocate (a_dia)
       if (ifprec_32) then
-!$acc exit data delete(a_dia_i_sp)
+!$omp target exit data map(delete:a_dia_i_sp)
         deallocate (a_dia_i_sp)
       else
-!$acc exit data delete(a_dia_i)
+!$omp target exit data map(delete:a_dia_i)
         deallocate (a_dia_i)
       endif
 !
@@ -34045,7 +34031,7 @@ subroutine alloc_pot3d_matrix_coefs
       allocate (a0p0(nr,ntm,npm))
       allocate (a00p(nr,ntm,npm))
       allocate (a_dia_i(N_cgvec))
-!$acc enter data create(a000,ap00,a0p0,a00p,a_dia_i)
+!$omp target enter data map(alloc:a000,ap00,a0p0,a00p,a_dia_i)
 !
       do concurrent (i=1:N_cgvec)
         a_dia_i(i)=0.
@@ -34082,16 +34068,16 @@ subroutine alloc_pot2d_matrix_coefs
 !
       allocate (a_dia(5,j0:ntm1,2:npm-1))
       a_dia(:,:,:)=0.
-!$acc enter data copyin(a_dia)
+!$omp target enter data map(to:a_dia)
 !
       if (ifprec_32) then
         allocate (a_dia_i_sp(N_cgvec))
         a_dia_i_sp(:)=0.
-!$acc enter data copyin(a_dia_i_sp)
+!$omp target enter data map(to:a_dia_i_sp)
       else
         allocate (a_dia_i(N_cgvec))
         a_dia_i(:)=0.
-!$acc enter data copyin(a_dia_i)
+!$omp target enter data map(to:a_dia_i)
       end if
 
 !
@@ -34136,15 +34122,15 @@ subroutine alloc_pot2dh_matrix_coefs
 !
       allocate (a_dia(5,2:ntm1,2:npm1))
       a_dia(:,:,:)=0.
-!$acc enter data copyin(a_dia)
+!$omp target enter data map(to:a_dia)
       if (ifprec_32) then
         allocate (a_dia_i_sp(N_cgvec))
         a_dia_i_sp(:)=0.
-!$acc enter data copyin(a_dia_i_sp)
+!$omp target enter data map(to:a_dia_i_sp)
       else
         allocate (a_dia_i(N_cgvec))
         a_dia_i(:)=0.
-!$acc enter data copyin(a_dia_i)
+!$omp target enter data map(to:a_dia_i)
       end if
 !
 ! ****** Allocate CSR storage of matrix and LU preconditioner:
@@ -34238,7 +34224,7 @@ subroutine load_matrix_pot2d_solve
         end if
 !
       enddo
-!$acc update device(a_dia)
+!$omp target update to(a_dia)
 !
 end subroutine
 !#######################################################################
@@ -34298,7 +34284,7 @@ subroutine load_matrix_pot2dh_solve
 !
         enddo
       enddo
-!$acc update device(a_dia)
+!$omp target update to(a_dia)
 !
 end subroutine
 !#######################################################################
@@ -34343,7 +34329,7 @@ subroutine load_preconditioner_pot2dh_solve
               a_dia_i_sp(ll)=real(one/a_dia(3,i,j),r_typ_sp)
             enddo
           enddo
-!$acc update device(a_dia_i_sp)
+!$omp target update to(a_dia_i_sp)
         else
           do j=2,npm1
             do i=2,ntm1
@@ -34351,7 +34337,7 @@ subroutine load_preconditioner_pot2dh_solve
               a_dia_i(ll)=one/a_dia(3,i,j)
             enddo
           enddo
-!$acc update device(a_dia_i)
+!$omp target update to(a_dia_i)
         end if
 !
       elseif (ifprec_pot2d.ge.2) then
@@ -34500,7 +34486,7 @@ subroutine load_preconditioner_pot2d_solve
               a_dia_i_sp(ll)=real(one/a_dia(3,j,k),r_typ_sp)
             enddo
           enddo
-!$acc update device(a_dia_i_sp)
+!$omp target update to(a_dia_i_sp)
         else
           do k=2,npm-1
             do j=j0,ntm1
@@ -34508,7 +34494,7 @@ subroutine load_preconditioner_pot2d_solve
               a_dia_i(ll)=one/a_dia(3,j,k)
             enddo
           enddo
-!$acc update device(a_dia_i)
+!$omp target update to(a_dia_i)
         end if
 !
       elseif (ifprec_pot2d.ge.2) then
@@ -35017,23 +35003,21 @@ subroutine delsq_perp_pot2d (ps,q)
       psi1_2=0.
 !
       if (tb0) then
-!$acc parallel loop default(present) reduction(+:psi0_1,psi0_2)
-!$omp parallel do default(shared) reduction(+:psi0_1,psi0_2)
+!$omp target teams distribute parallel do reduction(+:psi0_1,psi0_2)
         do k=2,npm1
           psi0_1=psi0_1+ps(1,k)*dp(k)*pl_i
           psi0_2=psi0_2+ps(2,k)*dp(k)*pl_i
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
       if (tb1) then
-!$acc parallel loop default(present) reduction(+:psi1_1,psi1_2)
-!$omp parallel do default(shared) reduction(+:psi1_1,psi1_2)
+!$omp target teams distribute parallel do reduction(+:psi1_1,psi1_2)
         do k=2,npm1
           psi1_1=psi1_1+ps(ntm1,k)*dp(k)*pl_i
           psi1_2=psi1_2+ps(ntm2,k)*dp(k)*pl_i
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       end if
 !
 ! ****** Sum over all processors.
@@ -35134,7 +35118,7 @@ subroutine pot2d_solver (x,rhs,ierr)
 !
       allocate(x_cg(N_cgvec))
       allocate(rhs_cg(N_cgvec))
-!$acc enter data create(x_cg,rhs_cg)
+!$omp target enter data map(alloc:x_cg,rhs_cg)
 !
       do concurrent (i=1:N_cgvec)
         x_cg(i)=0.
@@ -35218,7 +35202,7 @@ subroutine pot2d_solver (x,rhs,ierr)
         call write_matrix_pot2d (fname)
       end if
 !
-!$acc exit data delete(x_cg,rhs_cg)
+!$omp target exit data map(delete:x_cg,rhs_cg)
       deallocate(x_cg)
       deallocate(rhs_cg)
 !
@@ -35267,7 +35251,7 @@ subroutine pot2dh_solver (x,rhs,ierr)
 !
       allocate(x_cg(N_cgvec))
       allocate(rhs_cg(N_cgvec))
-!$acc enter data create(x_cg,rhs_cg)
+!$omp target enter data map(alloc:x_cg,rhs_cg)
 !
       do concurrent (i=1:N_cgvec)
         x_cg(i)=0.
@@ -35320,7 +35304,7 @@ subroutine pot2dh_solver (x,rhs,ierr)
 !
       call seam_2d_tp (x,nt,np,.true.,.true.)
 !
-!$acc exit data delete(x_cg,rhs_cg)
+!$omp target exit data map(delete:x_cg,rhs_cg)
       deallocate(x_cg)
       deallocate(rhs_cg)
 !
@@ -35384,13 +35368,13 @@ subroutine pot3d_solver (x,rhs)
 !
       allocate(x_cg(N_cgvec))
       allocate(rhs_cg(N_cgvec))
-!$acc enter data create(x_cg,rhs_cg)
+!$omp target enter data map(alloc:x_cg,rhs_cg)
 !
       do concurrent (i=1:N_cgvec)
         x_cg(i)=0.
         rhs_cg(i)=0.
       enddo
-!$acc update device(a000,ap00,a0p0,a00p,a_dia_i)
+!$omp target update to(a000,ap00,a0p0,a00p,a_dia_i)
 !
       solve_type=ST_POT3D
 !
@@ -35409,7 +35393,7 @@ subroutine pot3d_solver (x,rhs)
 ! ****** x_cg is used here as a dummy array (overwritten below).
 !
       allocate(xbc(nr,ntm,npm))
-!$acc enter data create(xbc)
+!$omp target enter data map(alloc:xbc)
 !
       do concurrent (k=1:npm, j=1:ntm, i=1:nr)
         xbc(i,j,k)=0.
@@ -35418,7 +35402,7 @@ subroutine pot3d_solver (x,rhs)
       call set_bc_pot3d (xbc,one)
       call seam_scalar (xbc,nr,ntm,npm)
       call delsq_mod_pot3d (xbc,x_cg)
-!$acc exit data delete(xbc)
+!$omp target exit data map(delete:xbc)
       deallocate(xbc)
 !
       do concurrent (i=1:N_cgvec)
@@ -35474,7 +35458,7 @@ subroutine pot3d_solver (x,rhs)
 !
 ! ****** Deallocate the temporary arrays and solver matrix.
 !
-!$acc exit data delete(x_cg,rhs_cg)
+!$omp target exit data map(delete:x_cg,rhs_cg)
       call dealloc_pot3d_matrix_coefs
       deallocate(x_cg)
       deallocate(rhs_cg)
@@ -35531,7 +35515,7 @@ subroutine divb_solver (x,rhs)
 !
       allocate(x_cg(N_cgvec))
       allocate(rhs_cg(N_cgvec))
-!$acc enter data create(x_cg,rhs_cg)
+!$omp target enter data map(alloc:x_cg,rhs_cg)
 !
       do concurrent (i=1:N_cgvec)
         x_cg(i)=0.
@@ -35598,7 +35582,7 @@ subroutine divb_solver (x,rhs)
 ! ****** Deallocate the temporary arrays and solver matrix.
 !
       call dealloc_divb_matrix_coefs
-!$acc exit data delete(x_cg,rhs_cg)
+!$omp target exit data map(delete:x_cg,rhs_cg)
       deallocate(x_cg)
       deallocate(rhs_cg)
 !
@@ -35769,7 +35753,7 @@ subroutine dealloc_pot3d_matrix_coefs
 !
 !-----------------------------------------------------------------------
 !
-!$acc exit data delete(a000,ap00,a0p0,a00p,a_dia_i)
+!$omp target exit data map(delete:a000,ap00,a0p0,a00p,a_dia_i)
       deallocate (a000)
       deallocate (ap00)
       deallocate (a0p0)
@@ -35816,7 +35800,7 @@ subroutine delsq_mod_pot3d (ps,q)
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(psi0,psi1)
+!$omp target enter data map(alloc:psi0,psi1)
       do concurrent (k=1:2, i=1:nr)
         psi0(i,k)=0.
         psi1(i,k)=0.
@@ -35909,7 +35893,7 @@ subroutine delsq_mod_pot3d (ps,q)
           enddo
         end if
       enddo
-!$acc exit data delete(psi0,psi1)
+!$omp target exit data map(delete:psi0,psi1)
 !
 end subroutine
 !#######################################################################
@@ -36493,7 +36477,7 @@ subroutine advv
         enddo
         call load_matrix_v_solve_explicit
       end if
-!$acc enter data create(x_cg)
+!$omp target enter data map(alloc:x_cg)
 !
 ! ****** Reset the time step to start the autocycle dt correctly.
 !
@@ -36653,7 +36637,7 @@ subroutine advv
 ! ****** Deallocate storage for the v solve.
 !
       call dealloc_v_matrix_coefs
-!$acc exit data delete(x_cg)
+!$omp target exit data map(delete:x_cg)
 !
 ! ****** Set the parallel part of the flow to zero if requested.
 !
@@ -36734,7 +36718,7 @@ subroutine advv_par
 !-----------------------------------------------------------------------
 !
       if (use_timer) call timer (TIME_ADVV)
-!$acc enter data create(f_par,vp_par,vdgv_par,dgv_par,rhs)
+!$omp target enter data map(alloc:f_par,vp_par,vdgv_par,dgv_par,rhs)
 !
 ! ****** Allocate the temporary vectors.
 !
@@ -36985,7 +36969,7 @@ subroutine advv_par
 !
       call dealloc_vvec (force)
 !
-!$acc exit data delete(f_par,vp_par,vdgv_par,dgv_par,rhs)
+!$omp target exit data map(delete:f_par,vp_par,vdgv_par,dgv_par,rhs)
       if (use_timer) call timer (TIME_ADVV)
 !
 end subroutine
@@ -37781,7 +37765,7 @@ subroutine project_v_par_to_v (vv_par,vv)
       real(r_typ), dimension(nr,nt,np) :: v_tmp
 !
 !-----------------------------------------------------------------------
-!$acc enter data create(v_tmp)
+!$omp target enter data map(alloc:v_tmp)
 !
 ! ****** Do the internal points.
 !
@@ -37820,7 +37804,7 @@ subroutine project_v_par_to_v (vv_par,vv)
 !
       call seam_vvec (vv)
 !
-!$acc exit data delete(v_tmp)
+!$omp target exit data map(delete:v_tmp)
 end subroutine
 !#######################################################################
 subroutine get_parallel_force (f,f_par)
@@ -37932,7 +37916,7 @@ subroutine v_solver (rhs,vg)
 !
       if (use_timer) call timer (TIME_V_SOLVER)
 !
-!$acc enter data create(x_cg,rhs_cg)
+!$omp target enter data map(alloc:x_cg,rhs_cg)
       do concurrent (i=1:N_cgvec)
         x_cg(i)=0.
         rhs_cg(i)=0.
@@ -38043,7 +38027,7 @@ subroutine v_solver (rhs,vg)
 !
       if (use_timer) call timer (TIME_V_SOLVER)
 !
-!$acc exit data delete(x_cg,rhs_cg)
+!$omp target exit data map(delete:x_cg,rhs_cg)
 end subroutine
 !#######################################################################
 subroutine v_par_solver (rhs,vg)
@@ -38098,7 +38082,7 @@ subroutine v_par_solver (rhs,vg)
 !
       if (use_timer) call timer (TIME_V_SOLVER)
 !
-!$acc enter data create(x_cg,rhs_cg,vp_par)
+!$omp target enter data map(alloc:x_cg,rhs_cg,vp_par)
       do concurrent (i=1:N_cgvec)
         x_cg(i)=0.
         rhs_cg(i)=0.
@@ -38189,7 +38173,7 @@ subroutine v_par_solver (rhs,vg)
 !
   950 continue
 !
-!$acc exit data delete(x_cg,rhs_cg,vp_par)
+!$omp target exit data map(delete:x_cg,rhs_cg,vp_par)
       if (use_timer) call timer (TIME_V_SOLVER)
 !
 end subroutine
@@ -38243,7 +38227,7 @@ subroutine a_solver (rhs,x,ab)
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(x_cg,rhs_cg)
+!$omp target enter data map(alloc:x_cg,rhs_cg)
       do concurrent (i=1:N_cgvec)
         x_cg(i)=0.
         rhs_cg(i)=0.
@@ -38333,7 +38317,7 @@ subroutine a_solver (rhs,x,ab)
 !
   900 format (/,tr1,a,' N=',i5,' |B|=',1pe9.2,' |R|=',1pe9.2)
 !
-!$acc exit data delete(x_cg,rhs_cg)
+!$omp target exit data map(delete:x_cg,rhs_cg)
 end subroutine
 !#######################################################################
 subroutine write_matrix_advv (fname)
@@ -39175,8 +39159,8 @@ subroutine set_time_profile_variables
 !
       tdc_phi=tp_vars(TP_INDEX_TDC_PHI)%value
 !
-!$acc update device(ef%psi%e0,ef%phi%e0, &
-!$acc               ef%vr_v0,ef%edrive%e0) if_present
+!$omp target update to(ef%psi%e0,ef%phi%e0, &
+!$omp               ef%vr_v0,ef%edrive%e0)
 end subroutine
 !#######################################################################
 subroutine set_r0_bc
@@ -40170,8 +40154,8 @@ subroutine char_bc_0
 ! ****** that include the lower radial boundary.
 !
       if (rb0) then
-!$acc enter data create(brhat,bthat,bphat,vpar_t,vpar_p,vee_mm, &
-!$acc                   vee,cs,dir,dirvee_cs,mask)
+!$omp target enter data map(alloc:brhat,bthat,bphat,vpar_t,vpar_p,vee_mm, &
+!$omp                   vee,cs,dir,dirvee_cs,mask)
 !
       do concurrent (k=1:np, j=1:nt)
         vpar_t(j,k)=0.
@@ -40386,10 +40370,8 @@ subroutine char_bc_0
       enddo
 !
       dirvee_cs_max = 0.
-!$acc parallel loop collapse(2) default(present) &
-!$acc               reduction(max:dirvee_cs_max)
-!$omp parallel do collapse(2) default(shared) &
-!$omp               reduction(max:dirvee_cs_max)
+!$omp target teams distribute parallel do collapse(2) &
+!$omp  reduction(max:dirvee_cs_max)
       do k=1,np
         do j=1,nt
           if (mask(j,k)) then
@@ -40397,7 +40379,7 @@ subroutine char_bc_0
           endif
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
       if (dirvee_cs_max.ge.one) then
 !
@@ -40410,8 +40392,7 @@ subroutine char_bc_0
           call ffopen (IO_TEMP2,'ssinflow_p'//trim(iproc_str),'a',ierr)
         end if
 !
-!$acc parallel loop collapse(2) default(present) copy(ierr)
-!$omp parallel do collapse(2) default(shared)
+!$omp target teams distribute parallel do collapse(2) map(tofrom:ierr)
         do k=2,npm1
           do j=2,ntm1
             if (dir(j,k)*vee(j,k).ge.cs(j,k)) then
@@ -40425,7 +40406,6 @@ subroutine char_bc_0
               else
                 write (IO_TEMP2,*) '### ERROR in CHAR_BC_0:'
 !$omp atomic write
-!$acc atomic write
                 ierr=1
               end if
               if (ss) then
@@ -40443,7 +40423,7 @@ subroutine char_bc_0
             end if
           enddo
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
         close(IO_TEMP2)
       end if
@@ -40518,8 +40498,8 @@ subroutine char_bc_0
           close(IO_TEMP)
         end if
 !
-!$acc exit data delete(brhat,bthat,bphat,vpar_t,vpar_p,vee_mm, &
-!$acc                  vee,cs,dir,dirvee_cs,mask)
+!$omp target exit data map(delete:brhat,bthat,bphat,vpar_t,vpar_p,vee_mm, &
+!$omp                  vee,cs,dir,dirvee_cs,mask)
       end if !rb0
 !
 end subroutine
@@ -40578,8 +40558,7 @@ subroutine char_bc_1
 !
 ! ****** Loop over all theta and phi points.
 !
-!$acc parallel loop collapse(2) default(present) copy(ierr)
-!$omp parallel do collapse(2) default(shared)
+!$omp target teams distribute parallel do collapse(2) map(tofrom:ierr)
       do k=2,npm1
         do j=2,ntm1
 !
@@ -40644,7 +40623,6 @@ subroutine char_bc_1
             write (*,*) 'theta = ',th(j)
             write (*,*) 'phi = ',ph(k)
 !$omp atomic write
-!$acc atomic write
             ierr=1
 !
           end if
@@ -40657,7 +40635,7 @@ subroutine char_bc_1
 !
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
       end if
 !
@@ -40704,7 +40682,7 @@ subroutine filter_tp_hh (f)
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(ff)
+!$omp target enter data map(alloc:ff)
 ! ****** Seam the field.
 !
       call seam_2d_tp (f,nt,np,.true.,.true.)
@@ -40725,7 +40703,7 @@ subroutine filter_tp_hh (f)
                     +(ff(j+1,k-1)+two*ff(j+1,k  )+ff(j+1,k+1)))
       enddo
 !
-!$acc exit data delete(ff)
+!$omp target exit data map(delete:ff)
 end subroutine
 !#######################################################################
 subroutine advrho
@@ -40761,7 +40739,7 @@ subroutine advrho
 !-----------------------------------------------------------------------
 !
       if (use_timer) call timer (TIME_ADVRHO)
-!$acc enter data create(rhop,vdg,divv)
+!$omp target enter data map(alloc:rhop,vdg,divv)
 !
       if (advance_fcs) then
         do concurrent (k=1:np, j=1:nt, i=1:nr)
@@ -40837,7 +40815,7 @@ subroutine advrho
         call smooth_poles_scalars (rho)
       end if
 !
-!$acc exit data delete(rhop,vdg,divv)
+!$omp target exit data map(delete:rhop,vdg,divv)
       if (use_timer) call timer (TIME_ADVRHO)
 !
 end subroutine
@@ -40876,9 +40854,8 @@ subroutine limit_alfven_speed_rho_mod
 !
 ! *** Check Alfven speed on internal points and modify rho accordingly.
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc              reduction(+:rho_added) copy(rho_added)
-!$omp parallel do collapse(3) default(shared) reduction(+:rho_added)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:rho_added) map(tofrom:rho_added)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -40915,7 +40892,7 @@ subroutine limit_alfven_speed_rho_mod
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 ! *** Get global sum of rho_added to check if rho was limited or not.
 !
@@ -41059,8 +41036,8 @@ subroutine advte
 !
 ! *** Initialize/reset arrays to zero
 !
-!$acc enter data create(Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
-!$acc                   div_v,div_vbb,Rreact)
+!$omp target enter data map(alloc:Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
+!$omp                   div_v,div_vbb,Rreact)
       do concurrent (k=1:np, j=1:nt, i=1:nr)
         Aflow(i,j,k)=0.
         Awave(i,j,k)=0.
@@ -41245,7 +41222,7 @@ subroutine advte
 !
         allocate(temp_e0k(nr,nt,np))
         allocate(qrad(nr,nt,np))
-!$acc enter data create(temp_e0k,qrad)
+!$omp target enter data map(alloc:temp_e0k,qrad)
 !
 ! ***** Set pre-factor for radiation loss.
 !
@@ -41270,7 +41247,7 @@ subroutine advte
         if (ifimplrad.ne.0) then
 !
           allocate(dqrad(nr,nt,np))
-!$acc enter data create(dqrad)
+!$omp target enter data map(alloc:dqrad)
 !
           call get_dqrad (dqrad,temp_e0k,nr*nt*np)
 !
@@ -41278,12 +41255,12 @@ subroutine advte
             dqdt(i,j,k)=dtime*fn_t*qpar*rho(i,j,k)*dqrad(i,j,k)
           enddo
 !
-!$acc exit data delete(dqrad)
+!$omp target exit data map(delete:dqrad)
           deallocate(dqrad)
 !
         end if
 !
-!$acc exit data delete(temp_e0k,qrad)
+!$omp target exit data map(delete:temp_e0k,qrad)
         deallocate(temp_e0k)
         deallocate(qrad)
 !
@@ -41317,8 +41294,8 @@ subroutine advte
       if (ifcheck0temp) then
         call check_negative_field (temp_e,nr,nt,np,FNAME,RNAME)
       end if
-!$acc exit data delete(Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
-!$acc                  div_v,div_vbb,Rreact)
+!$omp target exit data map(delete:Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
+!$omp                  div_v,div_vbb,Rreact)
 !
       if (use_timer) call timer (TIME_ADVTE)
 !
@@ -41387,8 +41364,8 @@ subroutine advtp
 !
 ! *** Initialize/reset arrays to zero
 !
-!$acc enter data create(Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
-!$acc                   div_v,div_vbb,Rreact)
+!$omp target enter data map(alloc:Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
+!$omp                   div_v,div_vbb,Rreact)
       do concurrent (k=1:np, j=1:nt, i=1:nr)
         Aflow(i,j,k)=0.
         Awave(i,j,k)=0.
@@ -41574,8 +41551,8 @@ subroutine advtp
       if (ifcheck0temp) then
         call check_negative_field (temp_p,nr,nt,np,FNAME,RNAME)
       end if
-!$acc exit data delete(Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
-!$acc                  div_v,div_vbb,Rreact)
+!$omp target exit data map(delete:Aflow,Awave,f_rho_t,div_tv,tempp,div_tvbb, &
+!$omp                  div_v,div_vbb,Rreact)
 !
       if (use_timer) call timer (TIME_ADVTP)
 !
@@ -41623,9 +41600,8 @@ subroutine check_negative_field (field,n1,n2,n3,fname,call_loc)
 !
       ierr=0
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc          copy(ierr) copyin(fname)
-!$omp parallel do collapse(3) default(shared)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  map(tofrom:ierr) map(to:fname)
       do k=2,n3-1
         do j=2,n2-1
           do i=2,n1-1
@@ -41640,13 +41616,12 @@ subroutine check_negative_field (field,n1,n2,n3,fname,call_loc)
               write (*,*) fname,' = ',field(i,j,k)
               write (*,*)
 !$omp atomic write
-!$acc atomic write
               ierr=1
             end if
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 ! ****** Find out if field had a negative value on any processor
 ! ****** and shutdown simulation if one was found.
@@ -41724,10 +41699,8 @@ subroutine floor_field (field,n1,n2,n3,fname,call_loc,floor_val)
 ! ****** Find the minimum value of the field and get its local indices.
 !
       min_field_val_local=HUGE(1._r_typ)
-!$acc parallel loop collapse(3) default(present) &
-!$acc          reduction(min:min_field_val_local)
-!$omp parallel do collapse(3) default(shared) &
-!$omp          reduction(min:min_field_val_local)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(min:min_field_val_local)
       do k=2,n3-1
         do j=2,n2-1
           do i=2,n1-1
@@ -41735,15 +41708,13 @@ subroutine floor_field (field,n1,n2,n3,fname,call_loc,floor_val)
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 ! ****** If minimum value is less than the floor, floor the field.
 !
       if (min_field_val_local.lt.floor_val) then
-!$acc parallel loop collapse(3) present(field) &
-!$acc          reduction(+:number_of_floors) copy(number_of_floors)
-!$omp parallel do collapse(3) default(shared) &
-!$omp   reduction(+:number_of_floors)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:number_of_floors) map(tofrom:number_of_floors)
         do k=2,n3-1
           do j=2,n2-1
             do i=2,n1-1
@@ -41756,7 +41727,7 @@ subroutine floor_field (field,n1,n2,n3,fname,call_loc,floor_val)
             enddo
           enddo
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 ! ***** Get global position of min location.
 !       RMC Note: MINLOC not supported with OpenACC and/or stdpar yet!
@@ -41890,7 +41861,7 @@ subroutine floor_field_v (field,field_limit, &
 !
       number_of_floors=0
 !
-!$acc enter data create(field_ratio)
+!$omp target enter data map(alloc:field_ratio)
 !
 !      do concurrent (k=1:n3, j=1:n2, i=1:n1)
 !        mask(i,j,k)=.false.
@@ -41906,10 +41877,8 @@ subroutine floor_field_v (field,field_limit, &
       enddo
 !
       min_field_diff_local = HUGE(1._r_typ)
-!$acc parallel loop collapse(3) default(present) &
-!$acc          reduction(min:min_field_diff_local)
-!$omp parallel do collapse(3) default(shared) &
-!$omp          reduction(min:min_field_diff_local)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(min:min_field_diff_local)
       do k=2,n3-1
         do j=2,n2-1
           do i=2,n1-1
@@ -41918,15 +41887,13 @@ subroutine floor_field_v (field,field_limit, &
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 ! ****** If minimum ratio is less than one, floor the field.
 !
       if (min_field_diff_local.lt.one) then
-!$acc parallel loop collapse(3) present(field) &
-!$acc          reduction(+:number_of_floors) copy(number_of_floors)
-!$omp parallel do collapse(3) default(shared) &
-!$omp   reduction(+:number_of_floors)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:number_of_floors) map(tofrom:number_of_floors)
         do k=2,n3-1
           do j=2,n2-1
             do i=2,n1-1
@@ -41939,7 +41906,7 @@ subroutine floor_field_v (field,field_limit, &
             enddo
           enddo
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 ! ***** Get global position of min location.
 !       RMC Note: MINLOC not supported with OpenACC and/or stdpar yet!
@@ -41949,7 +41916,7 @@ subroutine floor_field_v (field,field_limit, &
 !        min_k=min_indices(3)-1+k0_g
 !
       end if
-!$acc exit data delete(field_ratio)
+!$omp target exit data map(delete:field_ratio)
 !
 ! ****** Get total number of floors over all processors.
 !
@@ -43215,7 +43182,7 @@ subroutine setdt
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(cflv)
+!$omp target enter data map(alloc:cflv)
       do concurrent (k=1:npm1, j=1:ntm1, i=1:nrm1)
         cflv(i,j,k)=0.
       enddo
@@ -43249,12 +43216,9 @@ subroutine setdt
         flow_cfl_max=0.
         wave_cfl_max=0.
         total_cfl_max=0.
-!$acc parallel loop collapse(3) default(present) &
-!$acc  reduction(max:flow_cfl_max,wave_cfl_max,total_cfl_max, &
-!$acc                vasq_max,cssq_max,vsq_max)
-!$omp parallel do collapse(3) default(shared) &
-!$omp reduction(max:flow_cfl_max,wave_cfl_max,total_cfl_max) &
-!$omp reduction(max:vasq_max,cssq_max,vsq_max)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:flow_cfl_max,wave_cfl_max,total_cfl_max, &
+!$omp                vasq_max,cssq_max,vsq_max)
         do k=1,npm1
           do j=1,ntm1
             do i=1,nrm1
@@ -43295,7 +43259,7 @@ subroutine setdt
             enddo
           enddo
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
         va_max=sqrt(vasq_max)
         cs_max=sqrt(cssq_max)
@@ -43352,10 +43316,8 @@ subroutine setdt
 !
         vsq_max=0.
         flow_cfl_max=0.
-!$acc parallel loop collapse(3) default(present) &
-!$acc  reduction(max:flow_cfl_max,vsq_max)
-!$omp parallel do collapse(3) default(shared) &
-!$omp reduction(max:flow_cfl_max,vsq_max)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:flow_cfl_max,vsq_max)
         do k=1,npm1
           do j=1,ntm1
             do i=1,nrm1
@@ -43380,7 +43342,7 @@ subroutine setdt
             enddo
           enddo
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
         v_max=sqrt(vsq_max)
 !
@@ -43409,7 +43371,7 @@ subroutine setdt
           allocate(temp_ek(nr,nt,np))
           allocate(qrad(nr,nt,np))
           allocate(dqrad(nr,nt,np))
-!$acc enter data create(temp_ek,qrad,dqrad)
+!$omp target enter data map(alloc:temp_ek,qrad,dqrad)
 !
           do concurrent (k=1:np, j=1:nt, i=1:nr)
             temp_ek(i,j,k)=fn_t*temp_e(i,j,k)
@@ -43422,9 +43384,8 @@ subroutine setdt
             call get_dqrad (dqrad,temp_ek,nr*nt*np)
           end if
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc  reduction(min:dt_rad)
-!$omp parallel do collapse(3) default(shared) reduction(min:dt_rad)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(min:dt_rad)
           do k=2,npm1
             do j=2,ntm1
               do i=2,nrm1
@@ -43438,14 +43399,14 @@ subroutine setdt
               enddo
             enddo
           enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 ! ****** Get the minima over all processors and apply safety factor.
 !
           call global_min (dt_rad)
           dt_rad_used=rad_limit_safety_factor*dt_rad
 !
-!$acc exit data delete(temp_ek,qrad,dqrad)
+!$omp target exit data map(delete:temp_ek,qrad,dqrad)
           deallocate(temp_ek)
           deallocate(qrad)
           deallocate(dqrad)
@@ -43457,10 +43418,8 @@ subroutine setdt
 !-----------------------------------------------------------------------
 !
         wave_cfl_max=0.
-!$acc parallel loop collapse(3) default(present) &
-!$acc  reduction(max:wave_cfl_max)
-!$omp parallel do collapse(3) default(shared) &
-!$omp reduction(max:wave_cfl_max)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:wave_cfl_max)
         do k=1,npm1
           do j=1,ntm1
             do i=1,nrm1
@@ -43487,7 +43446,7 @@ subroutine setdt
             enddo
           enddo
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
         wave_cfl_max=sqrt(wave_cfl_max)
 !
@@ -43555,10 +43514,8 @@ subroutine setdt
         vasq_max=0.
         cssq_max=0.
         wave_cfl_max=0.
-!$acc parallel loop collapse(3) default(present) &
-!$acc  reduction(max:wave_cfl_max,si_max,vasq_max,cssq_max)
-!$omp parallel do collapse(3) default(shared) &
-!$omp reduction(max:wave_cfl_max,si_max,vasq_max,cssq_max)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:wave_cfl_max,si_max,vasq_max,cssq_max)
         do k=1,npm1
           do j=1,ntm1
             do i=1,nrm1
@@ -43591,7 +43548,7 @@ subroutine setdt
             enddo
           enddo
         enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
         wave_cfl_max=sqrt(wave_cfl_max)
         va_max=sqrt(vasq_max)
@@ -43684,7 +43641,7 @@ subroutine setdt
         end if
       end if
 !
-!$acc exit data delete(cflv)
+!$omp target exit data map(delete:cflv)
 end subroutine
 !#######################################################################
 subroutine celleta
@@ -43752,7 +43709,7 @@ subroutine celleta
       else
         etacel(:,:,:)=0.
       end if
-!$acc update device(etacel)
+!$omp target update to(etacel)
 !
 end subroutine
 !#######################################################################
@@ -43827,7 +43784,7 @@ subroutine seam_avec (a)
 !
 ! ****** Launch async receives.
 !
-!$acc host_data use_device(a%r,a%t)
+!$omp target data use_device_ptr(a%r,a%t)
       call MPI_Irecv (a%r(:,:,  1),lbuf3r,ntype_real,iproc_pm,tagr, &
                       comm_all,req(1),ierr)
       call MPI_Irecv (a%r(:,:,n3r),lbuf3r,ntype_real,iproc_pp,tagr, &
@@ -43851,7 +43808,7 @@ subroutine seam_avec (a)
 ! ****** Wait for all seams to complete.
 !
       call MPI_Waitall (8,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Seam the first dimension.
 !
@@ -43859,8 +43816,8 @@ subroutine seam_avec (a)
 !
 ! ****** Load buffers.
 !
-!$acc enter data create(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
-!$acc                   rbuf11t,rbuf12t,rbuf11p,rbuf12p)
+!$omp target enter data map(alloc:sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
+!$omp                   rbuf11t,rbuf12t,rbuf11p,rbuf12p)
         do concurrent (j=1:n3t, i=1:n2t)
           sbuf11t(i,j)=a%t(n1t-1,i,j)
           sbuf12t(i,j)=a%t(    2,i,j)
@@ -43871,8 +43828,8 @@ subroutine seam_avec (a)
           sbuf12p(i,j)=a%p(    2,i,j)
         enddo
 !
-!$acc host_data use_device(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
-!$acc                      rbuf11t,rbuf12t,rbuf11p,rbuf12p)
+!$omp target data use_device_ptr(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
+!$omp                      rbuf11t,rbuf12t,rbuf11p,rbuf12p)
         call MPI_Irecv (rbuf11t,lbuf1t,ntype_real,iproc_rm,tagt, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf12t,lbuf1t,ntype_real,iproc_rp,tagt, &
@@ -43896,7 +43853,7 @@ subroutine seam_avec (a)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (8,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -43919,16 +43876,16 @@ subroutine seam_avec (a)
             a%p(n1p,i,j)=rbuf12p(i,j)
           enddo
         end if
-!$acc exit data delete(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
-!$acc                  rbuf11t,rbuf12t,rbuf11p,rbuf12p)
+!$omp target exit data map(delete:sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
+!$omp                  rbuf11t,rbuf12t,rbuf11p,rbuf12p)
 !
       end if
 !
 ! ****** Seam the second dimension.
 !
       if (nproc_t.gt.1) then
-!$acc enter data create(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
-!$acc                   rbuf21r,rbuf22r,rbuf21p,rbuf22p)
+!$omp target enter data map(alloc:sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
+!$omp                   rbuf21r,rbuf22r,rbuf21p,rbuf22p)
 !
         do concurrent (k=1:n3r, j=1:n1r)
           sbuf21r(j,k)=a%r(j,n2r-1,k)
@@ -43940,8 +43897,8 @@ subroutine seam_avec (a)
           sbuf22p(j,k)=a%p(j,    2,k)
         enddo
 !
-!$acc host_data use_device(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
-!$acc                      rbuf21r,rbuf22r,rbuf21p,rbuf22p)
+!$omp target data use_device_ptr(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
+!$omp                      rbuf21r,rbuf22r,rbuf21p,rbuf22p)
         call MPI_Irecv (rbuf21r,lbuf2r,ntype_real,iproc_tm,tagr, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf22r,lbuf2r,ntype_real,iproc_tp,tagr, &
@@ -43965,7 +43922,7 @@ subroutine seam_avec (a)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (8,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -43990,8 +43947,8 @@ subroutine seam_avec (a)
             a%p(j,n2p,k)=rbuf22p(j,k)
           enddo
         end if
-!$acc exit data delete(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
-!$acc                  rbuf21r,rbuf22r,rbuf21p,rbuf22p)
+!$omp target exit data map(delete:sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
+!$omp                  rbuf21r,rbuf22r,rbuf21p,rbuf22p)
 !
       end if
 !
@@ -44256,7 +44213,7 @@ subroutine seam_bvec (b)
 !
 ! ****** Launch async receives.
 !
-!$acc host_data use_device(b%r,b%t)
+!$omp target data use_device_ptr(b%r,b%t)
       call MPI_Irecv (b%r(:,:,  1),lbuf3r,ntype_real,iproc_pm,tagr, &
                       comm_all,req(1),ierr)
       call MPI_Irecv (b%r(:,:,n3r),lbuf3r,ntype_real,iproc_pp,tagr, &
@@ -44280,7 +44237,7 @@ subroutine seam_bvec (b)
 ! ****** Wait for all seams to complete.
 !
       call MPI_Waitall (8,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Seam the first dimension.
 !
@@ -44288,8 +44245,8 @@ subroutine seam_bvec (b)
 !
 ! ****** Load buffers.
 !
-!$acc enter data create(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
-!$acc                   rbuf11t,rbuf12t,rbuf11p,rbuf12p)
+!$omp target enter data map(alloc:sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
+!$omp                   rbuf11t,rbuf12t,rbuf11p,rbuf12p)
         do concurrent (k=1:n3t, j=1:n2t)
           sbuf11t(j,k)=b%t(n1t-1,j,k)
           sbuf12t(j,k)=b%t(    2,j,k)
@@ -44300,8 +44257,8 @@ subroutine seam_bvec (b)
           sbuf12p(j,k)=b%p(    2,j,k)
         enddo
 !
-!$acc host_data use_device(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
-!$acc                      rbuf11t,rbuf12t,rbuf11p,rbuf12p)
+!$omp target data use_device_ptr(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
+!$omp                      rbuf11t,rbuf12t,rbuf11p,rbuf12p)
         call MPI_Irecv (rbuf11t,lbuf1t,ntype_real,iproc_rm,tagt, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf12t,lbuf1t,ntype_real,iproc_rp,tagt, &
@@ -44325,7 +44282,7 @@ subroutine seam_bvec (b)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (8,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -44349,8 +44306,8 @@ subroutine seam_bvec (b)
           enddo
         end if
 !
-!$acc exit data delete(sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
-!$acc                  rbuf11t,rbuf12t,rbuf11p,rbuf12p)
+!$omp target exit data map(delete:sbuf11t,sbuf12t,sbuf11p,sbuf12p, &
+!$omp                  rbuf11t,rbuf12t,rbuf11p,rbuf12p)
 !
       end if
 !
@@ -44358,8 +44315,8 @@ subroutine seam_bvec (b)
 !
       if (nproc_t.gt.1) then
 !
-!$acc enter data create(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
-!$acc                   rbuf21r,rbuf22r,rbuf21p,rbuf22p)
+!$omp target enter data map(alloc:sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
+!$omp                   rbuf21r,rbuf22r,rbuf21p,rbuf22p)
 !
         do concurrent (k=1:n3r, j=1:n1r)
           sbuf21r(j,k)=b%r(j,n2r-1,k)
@@ -44371,8 +44328,8 @@ subroutine seam_bvec (b)
           sbuf22p(j,k)=b%p(j,    2,k)
         enddo
 !
-!$acc host_data use_device(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
-!$acc                      rbuf21r,rbuf22r,rbuf21p,rbuf22p)
+!$omp target data use_device_ptr(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
+!$omp                      rbuf21r,rbuf22r,rbuf21p,rbuf22p)
         call MPI_Irecv (rbuf21r,lbuf2r,ntype_real,iproc_tm,tagr, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf22r,lbuf2r,ntype_real,iproc_tp,tagr, &
@@ -44396,7 +44353,7 @@ subroutine seam_bvec (b)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (8,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -44420,8 +44377,8 @@ subroutine seam_bvec (b)
           enddo
         end if
 !
-!$acc exit data delete(sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
-!$acc                  rbuf21r,rbuf22r,rbuf21p,rbuf22p)
+!$omp target exit data map(delete:sbuf21r,sbuf22r,sbuf21p,sbuf22p, &
+!$omp                  rbuf21r,rbuf22r,rbuf21p,rbuf22p)
 !
       end if
 !
@@ -44506,7 +44463,7 @@ subroutine seam_vvec (v)
 !
 ! ****** Launch async receives.
 !
-!$acc host_data use_device(vr,vt,vp)
+!$omp target data use_device_ptr(vr,vt,vp)
       call MPI_Irecv (vr(:,:,  1),lbuf3r,ntype_real,iproc_pm,tagr, &
                       comm_all,req(1),ierr)
       call MPI_Irecv (vr(:,:,n3r),lbuf3r,ntype_real,iproc_pp,tagr, &
@@ -44538,7 +44495,7 @@ subroutine seam_vvec (v)
 ! ****** Wait for all seams to complete.
 !
       call MPI_Waitall (12,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Seam the first dimension.
 !
@@ -44552,8 +44509,8 @@ subroutine seam_vvec (v)
                   sbuf2t(n2t,n3t),rbuf2t(n2t,n3t), &
                   sbuf1p(n2p,n3p),rbuf1p(n2p,n3p), &
                   sbuf2p(n2p,n3p),rbuf2p(n2p,n3p))
-!$acc enter data create(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
-!$acc                   rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
+!$omp target enter data map(alloc:sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
+!$omp                   rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
 !
         do concurrent (k=1:n3r, j=1:n2r)
           sbuf1r(j,k)=vr(n1r-1,j,k)
@@ -44570,8 +44527,8 @@ subroutine seam_vvec (v)
           sbuf2p(j,k)=vp(    2,j,k)
         enddo
 !
-!$acc host_data use_device(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
-!$acc                      rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
+!$omp target data use_device_ptr(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
+!$omp                      rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
         call MPI_Irecv (rbuf1r,lbuf1r,ntype_real,iproc_rm,tagr, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf2r,lbuf1r,ntype_real,iproc_rp,tagr, &
@@ -44603,7 +44560,7 @@ subroutine seam_vvec (v)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (12,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -44635,8 +44592,8 @@ subroutine seam_vvec (v)
           enddo
         end if
 !
-!$acc exit data delete(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
-!$acc                  rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
+!$omp target exit data map(delete:sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
+!$omp                  rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
         deallocate (sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
                     rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
 !
@@ -44652,8 +44609,8 @@ subroutine seam_vvec (v)
                   sbuf2t(n1t,n3t),rbuf2t(n1t,n3t), &
                   sbuf1p(n1p,n3p),rbuf1p(n1p,n3p), &
                   sbuf2p(n1p,n3p),rbuf2p(n1p,n3p))
-!$acc enter data create(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
-!$acc                   rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
+!$omp target enter data map(alloc:sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
+!$omp                   rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
 !
         do concurrent (k=1:n3r, j=1:n1r)
           sbuf1r(j,k)=vr(j,n2r-1,k)
@@ -44670,8 +44627,8 @@ subroutine seam_vvec (v)
           sbuf2p(j,k)=vp(j,    2,k)
         enddo
 !
-!$acc host_data use_device(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
-!$acc                      rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
+!$omp target data use_device_ptr(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
+!$omp                      rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
         call MPI_Irecv (rbuf1r,lbuf2r,ntype_real,iproc_tm,tagr, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf2r,lbuf2r,ntype_real,iproc_tp,tagr, &
@@ -44703,7 +44660,7 @@ subroutine seam_vvec (v)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (12,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -44735,8 +44692,8 @@ subroutine seam_vvec (v)
           enddo
         end if
 !
-!$acc exit data delete(sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
-!$acc                  rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
+!$omp target exit data map(delete:sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
+!$omp                  rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
         deallocate (sbuf1r,sbuf2r,sbuf1t,sbuf2t,sbuf1p,sbuf2p, &
                     rbuf1r,rbuf2r,rbuf1t,rbuf2t,rbuf1p,rbuf2p)
 !
@@ -44804,7 +44761,7 @@ subroutine seam_scalar (x,n1,n2,n3)
 !
 ! ****** Launch async receives.
 !
-!$acc host_data use_device(x)
+!$omp target data use_device_ptr(x)
       call MPI_Irecv (x(:,:, 1),lbuf3,ntype_real,iproc_pm,tag, &
                       comm_all,req(1),ierr)
       call MPI_Irecv (x(:,:,n3),lbuf3,ntype_real,iproc_pp,tag, &
@@ -44820,7 +44777,7 @@ subroutine seam_scalar (x,n1,n2,n3)
 ! ****** Wait for all seams to complete.
 !
       call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Seam the first dimension.
 !
@@ -44829,14 +44786,14 @@ subroutine seam_scalar (x,n1,n2,n3)
 ! ****** Load buffers.
 !
         allocate (sbuf1(n2,n3),rbuf1(n2,n3),sbuf2(n2,n3),rbuf2(n2,n3))
-!$acc enter data create(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target enter data map(alloc:sbuf1,sbuf2,rbuf1,rbuf2)
 !
         do concurrent (k=1:n3, j=1:n2)
           sbuf1(j,k)=x(n1-1,j,k)
           sbuf2(j,k)=x(   2,j,k)
         enddo
 !
-!$acc host_data use_device(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target data use_device_ptr(sbuf1,sbuf2,rbuf1,rbuf2)
         call MPI_Irecv (rbuf1,lbuf1,ntype_real,iproc_rm,tag, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf2,lbuf1,ntype_real,iproc_rp,tag, &
@@ -44852,7 +44809,7 @@ subroutine seam_scalar (x,n1,n2,n3)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -44867,7 +44824,7 @@ subroutine seam_scalar (x,n1,n2,n3)
           enddo
         end if
 !
-!$acc exit data delete(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target exit data map(delete:sbuf1,sbuf2,rbuf1,rbuf2)
         deallocate (sbuf1,rbuf1,sbuf2,rbuf2)
 !
       end if
@@ -44877,14 +44834,14 @@ subroutine seam_scalar (x,n1,n2,n3)
       if (nproc_t.gt.1) then
 !
         allocate (sbuf1(n1,n3),rbuf1(n1,n3),sbuf2(n1,n3),rbuf2(n1,n3))
-!$acc enter data create(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target enter data map(alloc:sbuf1,sbuf2,rbuf1,rbuf2)
 !
         do concurrent (k=1:n3, j=1:n1)
           sbuf1(j,k)=x(j,n2-1,k)
           sbuf2(j,k)=x(j,   2,k)
         enddo
 !
-!$acc host_data use_device(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target data use_device_ptr(sbuf1,sbuf2,rbuf1,rbuf2)
         call MPI_Irecv (rbuf1,lbuf2,ntype_real,iproc_tm,tag, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf2,lbuf2,ntype_real,iproc_tp,tag, &
@@ -44900,7 +44857,7 @@ subroutine seam_scalar (x,n1,n2,n3)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -44915,7 +44872,7 @@ subroutine seam_scalar (x,n1,n2,n3)
           enddo
         end if
 !
-!$acc exit data delete(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target exit data map(delete:sbuf1,sbuf2,rbuf1,rbuf2)
         deallocate (sbuf1,sbuf2,rbuf1,rbuf2)
 !
       end if
@@ -44984,7 +44941,7 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
 !
 ! ****** Launch async receives.
 !
-!$acc host_data use_device(x)
+!$omp target data use_device_ptr(x)
         call MPI_Irecv (x(:,:, 1),lbuf3,ntype_real,iproc_pm,tag, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (x(:,:,n3),lbuf3,ntype_real,iproc_pp,tag, &
@@ -45000,7 +44957,7 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Seam the first dimension.
 !
@@ -45011,14 +44968,14 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
 ! ****** Load buffers.
 !
         allocate (sbuf1(n2,n3),rbuf1(n2,n3),sbuf2(n2,n3),rbuf2(n2,n3))
-!$acc enter data create(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target enter data map(alloc:sbuf1,sbuf2,rbuf1,rbuf2)
 !
         do concurrent (k=1:n3, j=1:n2)
           sbuf1(j,k)=x(n1-1,j,k)
           sbuf2(j,k)=x(   2,j,k)
         enddo
 !
-!$acc host_data use_device(rbuf1,sbuf1,rbuf2,sbuf2)
+!$omp target data use_device_ptr(rbuf1,sbuf1,rbuf2,sbuf2)
         call MPI_Irecv (rbuf1,lbuf1,ntype_real,iproc_rm,tag, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf2,lbuf1,ntype_real,iproc_rp,tag, &
@@ -45034,7 +44991,7 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -45049,7 +45006,7 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
           enddo
         end if
 !
-!$acc exit data delete(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target exit data map(delete:sbuf1,sbuf2,rbuf1,rbuf2)
         deallocate (sbuf1,rbuf1,sbuf2,rbuf2)
 !
       end if
@@ -45059,14 +45016,14 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
       if (nproc_t.gt.1.and.seam_t) then
 !
         allocate (sbuf1(n1,n3),rbuf1(n1,n3),sbuf2(n1,n3),rbuf2(n1,n3))
-!$acc enter data create(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target enter data map(alloc:sbuf1,sbuf2,rbuf1,rbuf2)
 !
         do concurrent (k=1:n3, j=1:n1)
           sbuf1(j,k)=x(j,n2-1,k)
           sbuf2(j,k)=x(j,   2,k)
         enddo
 !
-!$acc host_data use_device(rbuf1,sbuf1,rbuf2,sbuf2)
+!$omp target data use_device_ptr(rbuf1,sbuf1,rbuf2,sbuf2)
         call MPI_Irecv (rbuf1,lbuf2,ntype_real,iproc_tm,tag, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf2,lbuf2,ntype_real,iproc_tp,tag, &
@@ -45082,7 +45039,7 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -45097,7 +45054,7 @@ subroutine seam_scalar_xd (x,n1,n2,n3,seam_r,seam_t,seam_p)
           enddo
         end if
 !
-!$acc exit data delete(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target exit data map(delete:sbuf1,sbuf2,rbuf1,rbuf2)
         deallocate (sbuf1,sbuf2,rbuf1,rbuf2)
 !
       end if
@@ -45463,7 +45420,7 @@ subroutine seam_2d_tp (x,n1,n2,seam1,seam2)
 !
 ! ****** Launch async receives.
 !
-!$acc host_data use_device(x)
+!$omp target data use_device_ptr(x)
         call MPI_Irecv (x(:, 1),n1,ntype_real,iproc_pm,tag, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (x(:,n2),n1,ntype_real,iproc_pp,tag, &
@@ -45479,7 +45436,7 @@ subroutine seam_2d_tp (x,n1,n2,seam1,seam2)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
       end if
 !
 ! ****** Seam the first dimension.
@@ -45489,14 +45446,14 @@ subroutine seam_2d_tp (x,n1,n2,seam1,seam2)
 ! ****** Load buffers.
 !
         allocate (sbuf1(n2),sbuf2(n2),rbuf1(n2),rbuf2(n2))
-!$acc enter data create(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target enter data map(alloc:sbuf1,sbuf2,rbuf1,rbuf2)
 !
         do concurrent (i=1:n2)
           sbuf1(i)=x(n1-1,i)
           sbuf2(i)=x(   2,i)
         enddo
 !
-!$acc host_data use_device(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target data use_device_ptr(sbuf1,sbuf2,rbuf1,rbuf2)
         call MPI_Irecv (rbuf1,n2,ntype_real,iproc_tm,tag, &
                         comm_all,req(1),ierr)
         call MPI_Irecv (rbuf2,n2,ntype_real,iproc_tp,tag, &
@@ -45512,7 +45469,7 @@ subroutine seam_2d_tp (x,n1,n2,seam1,seam2)
 ! ****** Wait for all seams to complete.
 !
         call MPI_Waitall (4,req,MPI_STATUSES_IGNORE,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Unload buffers.
 !
@@ -45528,7 +45485,7 @@ subroutine seam_2d_tp (x,n1,n2,seam1,seam2)
           enddo
         end if
 !
-!$acc exit data delete(sbuf1,sbuf2,rbuf1,rbuf2)
+!$omp target exit data map(delete:sbuf1,sbuf2,rbuf1,rbuf2)
         deallocate (sbuf1,sbuf2,rbuf1,rbuf2)
 !
       end if
@@ -46048,10 +46005,10 @@ subroutine global_min_v_tp (n,x)
 !
       if (use_timer) call timer (TIME_MINMAX)
 !
-!$acc host_data use_device(x) if_present
+!$omp target data use_device_ptr(x)
       call MPI_Allreduce (MPI_IN_PLACE,x,n,ntype_real, &
                           MPI_MIN,comm_tp,ierr)
-!$acc end host_data
+!$omp end target data
 !
       if (use_timer) call timer (TIME_MINMAX)
 !
@@ -46178,10 +46135,10 @@ subroutine global_sum_v (n,x)
 !
       if (use_timer) call timer (TIME_SUM)
 !
-!$acc host_data use_device(x) if_present
+!$omp target data use_device_ptr(x)
       call MPI_Allreduce (MPI_IN_PLACE,x,n,ntype_real, &
                           MPI_SUM,comm_all,ierr)
-!$acc end host_data
+!$omp end target data
 !
       if (use_timer) call timer (TIME_SUM)
 !
@@ -46496,7 +46453,7 @@ subroutine write_field (fname,ix,a)
       integer :: n1,n2,n3
 !
 !-----------------------------------------------------------------------
-!$acc update self(a) if_present
+!$omp target update from(a)
 !
       ierr=0
 !
@@ -46606,7 +46563,7 @@ subroutine write_field_tp (fname,ix,a,iproc_r2use)
 !
 !-----------------------------------------------------------------------
 !
-!$acc update self(a) if_present
+!$omp target update from(a)
       ierr=0
 !
       if (iproc_r.eq.iproc_r2use) then
@@ -47716,7 +47673,7 @@ subroutine set_field_table
       integer :: i,ierr,irank
 !
 !-----------------------------------------------------------------------
-!$acc enter data create(fldtab)
+!$omp target enter data map(alloc:fldtab)
 !
 ! ****** Define the properties of the fields.
 !
@@ -47978,7 +47935,7 @@ subroutine set_field_table
           fldtab(i)%map_p=>map_ph
           fldtab(i)%maptp_p=>maptp_ph
         end if
-!$acc enter data create(fldtab(i))
+!$omp target enter data map(alloc:fldtab(i))
       enddo
 !
 ! ****** Set the local dimensions of the fields.
@@ -48027,15 +47984,15 @@ subroutine set_field_table
           fldtab(i)%n2(irank)=rbuf(2,i,irank)
           fldtab(i)%n3(irank)=rbuf(3,i,irank)
         enddo
-!$acc enter data copyin(fldtab(i)%n1)
-!$acc enter data copyin(fldtab(i)%n2)
-!$acc enter data copyin(fldtab(i)%n3)
+!$omp target enter data map(to:fldtab(i)%n1)
+!$omp target enter data map(to:fldtab(i)%n2)
+!$omp target enter data map(to:fldtab(i)%n3)
       enddo
 !
 end subroutine
 !#######################################################################
 pure subroutine interp (n,x,xv,i,ip1,a,ierr)
-!$acc routine(interp) seq
+!$omp declare target (interp)
 !
 !-----------------------------------------------------------------------
 !
@@ -48471,14 +48428,14 @@ subroutine initialize_tracers
         write (9,*) '### Number outside: ', nout
         write (9,*) '### Fraction: ', float(nout)/float(tracers%n)
       end if
-!$acc enter data copyin(tracers,tracers%r,tracers%t,tracers%p,tracers%n)
+!$omp target enter data map(to:tracers,tracers%r,tracers%t,tracers%p,tracers%n)
 !
 ! ****** Initialize additional tracked quantities.
 !
       if (trace_track_ds) then
         allocate (tracers%ds(tracers%n))
         tracers%ds(:)=0.
-!$acc enter data copyin(tracers%ds)
+!$omp target enter data map(to:tracers%ds)
       end if
 !
       if (iamp0) then
@@ -48635,7 +48592,7 @@ subroutine tdiagcol
 ! ****** Loop over all diagnostic quantities.
 !
             do j=1,diagpt(i)%nq
-!$acc update self(diagpt(i)%q(j)%fld) if_present
+!$omp target update from(diagpt(i)%q(j)%fld)
 !
 ! ****** Set the interpolation factors.
 !
@@ -48848,8 +48805,8 @@ subroutine magnetic_energy (b,wr,wt,wp)
       wr=0.
       wt=0.
       wp=0.
-!$acc parallel loop collapse(3) default(present) reduction(+:wr,wt,wp)
-!$omp parallel do collapse(3) default(shared) reduction(+:wr,wt,wp)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:wr,wt,wp)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -48863,7 +48820,7 @@ subroutine magnetic_energy (b,wr,wt,wp)
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       wr=half*wr
       wt=half*wt
       wp=half*wp
@@ -48917,8 +48874,8 @@ subroutine kinetic_energy (rho,v,kr,kt,kp)
       kr=0.
       kt=0.
       kp=0.
-!$acc parallel loop collapse(3) default(present) reduction(+:kr,kt,kp)
-!$omp parallel do collapse(3) default(shared) reduction(+:kr,kt,kp)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:kr,kt,kp)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -48933,7 +48890,7 @@ subroutine kinetic_energy (rho,v,kr,kt,kp)
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       kr=half*kr
       kt=half*kt
       kp=half*kp
@@ -49000,10 +48957,8 @@ subroutine kinetic_energy_pp (rho,v,b, &
       kperpr=0.
       kperpt=0.
       kperpp=0.
-!$acc parallel loop collapse(3) default(present) &
-!$acc          reduction(+:kparr,kpart,kparp,kperpr,kperpt,kperpp)
-!$omp parallel do collapse(3) default(shared) &
-!$omp          reduction(+:kparr,kpart,kparp,kperpr,kperpt,kperpp)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:kparr,kpart,kparp,kperpr,kperpt,kperpp)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -49032,7 +48987,7 @@ subroutine kinetic_energy_pp (rho,v,b, &
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       kparr=half*kparr
       kpart=half*kpart
       kparp=half*kparp
@@ -49084,8 +49039,8 @@ subroutine thermal_energy (pres,gamma,etherm)
 ! ****** Calculate the thermal energy.
 !
       etherm=0.
-!$acc parallel loop collapse(3) default(present) reduction(+:etherm)
-!$omp parallel do collapse(3) default(shared) reduction(+:etherm)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:etherm)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -49095,7 +49050,7 @@ subroutine thermal_energy (pres,gamma,etherm)
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
       etherm=etherm/(gamma-one)
 !
 end subroutine
@@ -49143,8 +49098,8 @@ subroutine volint_jb (b,fj,jdotb,jxb)
 !
       jdotb=0.
       jxb=0.
-!$acc parallel loop collapse(3) default(present) reduction(+:jdotb,jxb)
-!$omp parallel do collapse(3) default(shared) reduction(+:jdotb,jxb)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:jdotb,jxb)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -49165,7 +49120,7 @@ subroutine volint_jb (b,fj,jdotb,jxb)
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 end subroutine
 !#######################################################################
@@ -49209,8 +49164,8 @@ subroutine resistive_dissipation (eta,fj,rr)
 ! ****** Calculate the rate of resistive dissipation.
 !
       rr=0.
-!$acc parallel loop collapse(3) default(present) reduction(+:rr)
-!$omp parallel do collapse(3) default(shared) reduction(+:rr)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(+:rr)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -49223,7 +49178,7 @@ subroutine resistive_dissipation (eta,fj,rr)
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
 end subroutine
 !#######################################################################
@@ -49697,7 +49652,7 @@ subroutine particle_dump
 !
 !-----------------------------------------------------------------------
 !
-!$acc update self(tracers%r,tracers%t,tracers%p)
+!$omp target update from(tracers%r,tracers%t,tracers%p)
       ierr=0
 !
 ! ****** Increment the tracer sequence number.
@@ -49739,7 +49694,7 @@ subroutine particle_dump
         deallocate (f)
 !
         if (trace_track_ds) then
-!$acc update self(tracers%ds)
+!$omp target update from(tracers%ds)
           call wrhdf_1d (hdfname('tracers_ds',iseq),.false., &
                      tracers%n,tracers%ds,tracers%r,.true.,ierr)
 !
@@ -49896,7 +49851,7 @@ subroutine slice_dump
             call interp (nr,rvec,tpslice_r,r0_int_idx, &
                          r1_int_idx,r_int_fac,ierr)
 !
-!$acc update self(fldtab(j)%f(r0_int_idx:r1_int_idx,:,:)) if_present
+!$omp target update from(fldtab(j)%f(r0_int_idx:r1_int_idx,:,:))
             a_tp(:,:)=(one-r_int_fac)*fldtab(j)%f(r0_int_idx,:,:) &
                          +(r_int_fac)*fldtab(j)%f(r1_int_idx,:,:)
 !
@@ -49926,10 +49881,10 @@ subroutine slice_dump
 ! ****** Write the TDC debugging slices if requested.
 !
       if (debug_tdc) then
-!$acc update self(br_pbv,eflux_vr,eflux_vt,eflux_vp,eflux_er, &
-!$acc             eflux_et,eflux_ep,vb%r0%r,vb%r0%t,vb%r0%p, &
-!$acc             vxbbr0r,vxbbr0t,vxbbr0p,curl_et,div_et, &
-!$acc             phi_tdc)
+!$omp target update from(br_pbv,eflux_vr,eflux_vt,eflux_vp,eflux_er, &
+!$omp             eflux_et,eflux_ep,vb%r0%r,vb%r0%t,vb%r0%p, &
+!$omp             vxbbr0r,vxbbr0t,vxbbr0p,curl_et,div_et, &
+!$omp             phi_tdc)
         fname=hdfname('br_pbv',iseq)
         call write_field_tp (fname,IFLD_BR,br_pbv,iproc_rb0)
         fname=hdfname('eflux_vr',iseq)
@@ -49969,7 +49924,7 @@ subroutine slice_dump
       if (debug_wtd) then
         if (wtd_use_open_field_cutoff.and. &
             debug_wtd_open_field_cutoff) then
-!$acc update self(wtd_open_flux_zmult,wtd_net_pflux,wtd_mask_open)
+!$omp target update from(wtd_open_flux_zmult,wtd_net_pflux,wtd_mask_open)
           fname=hdfname('wtd_open_flux_zmult',iseq)
           call write_field_tp(fname,IFLD_VR, &
                               wtd_open_flux_zmult,iproc_rb0)
@@ -50914,7 +50869,7 @@ subroutine write_restart (iseq)
         else
           allocate (atp_g(1,1))
         end if
-!$acc update self(vb%r0%r) if_present
+!$omp target update from(vb%r0%r)
         call assemble_array_tp (fldtab(IFLD_VR)%maptp_t, &
                                 fldtab(IFLD_VR)%maptp_p,vb%r0%r,atp_g)
         if (iproc2d_tp.eq.0) then
@@ -50943,7 +50898,7 @@ subroutine write_restart (iseq)
         else
           allocate (atp_g(1,1))
         end if
-!$acc update self(vb%r0%t) if_present
+!$omp target update from(vb%r0%t)
         call assemble_array_tp (fldtab(IFLD_VT)%maptp_t, &
                                 fldtab(IFLD_VT)%maptp_p,vb%r0%t,atp_g)
         if (iproc2d_tp.eq.0) then
@@ -50972,7 +50927,7 @@ subroutine write_restart (iseq)
         else
           allocate (atp_g(1,1))
         end if
-!$acc update self(vb%r0%p) if_present
+!$omp target update from(vb%r0%p)
         call assemble_array_tp (fldtab(IFLD_VP)%maptp_t, &
                                 fldtab(IFLD_VP)%maptp_p,vb%r0%p,atp_g)
         if (iproc2d_tp.eq.0) then
@@ -51056,7 +51011,7 @@ subroutine write_restart (iseq)
           else
             allocate (a_g(1,1,1))
           end if
-!$acc update self(fldtab(ix)%f) if_present
+!$omp target update from(fldtab(ix)%f)
           call assemble_array (fldtab(ix)%map_r,fldtab(ix)%map_t, &
                                fldtab(ix)%map_p,fldtab(ix)%f,a_g)
           if (iamp0) then
@@ -54589,7 +54544,7 @@ subroutine advtce
       else
         call load_matrix_t_solve_explicit (temp_e0)
       end if
-!$acc enter data create(x_cg)
+!$omp target enter data map(alloc:x_cg)
 !
 ! ****** Reset the time step to start the autocycle dt correctly.
 !
@@ -54676,7 +54631,7 @@ subroutine advtce
 !
 ! ****** Set the RHS and the guess.
 !
-!$acc enter data create(rhs_cg,taux,rhs3d)
+!$omp target enter data map(alloc:rhs_cg,taux,rhs3d)
           do concurrent (k=1:np, j=1:nt, i=1:nr)
             taux(i,j,k)=0.
             rhs3d(i,j,k)=0.
@@ -54754,7 +54709,7 @@ subroutine advtce
           call set_bc_temp_e (temp_e,one)
           call seam_scalar (temp_e,nr,nt,np)
 !
-!$acc exit data delete(rhs_cg,taux,rhs3d)
+!$omp target exit data map(delete:rhs_cg,taux,rhs3d)
         end if
 !
 ! ****** Update the amount of the large time step that has been stepped.
@@ -54783,7 +54738,7 @@ subroutine advtce
       if (print_matrix_t) call write_matrix_t
 !
       call dealloc_t_matrix_coefs
-!$acc exit data delete(x_cg)
+!$omp target exit data map(delete:x_cg)
 !
       if (use_timer) call timer (TIME_ADVTCE)
 !
@@ -54866,7 +54821,7 @@ subroutine advtcp
       else
         call load_matrix_t_solve_explicit (temp_p0)
       end if
-!$acc enter data create(x_cg)
+!$omp target enter data map(alloc:x_cg)
 !
 ! ****** Reset the time step to start the autocycle dt correctly.
 !
@@ -54954,7 +54909,7 @@ subroutine advtcp
 !
 ! ****** Set the RHS and the guess.
 !
-!$acc enter data create(rhs_cg,taux,rhs3d)
+!$omp target enter data map(alloc:rhs_cg,taux,rhs3d)
           do concurrent (k=1:np, j=1:nt, i=1:nr)
             taux(i,j,k)=0.
             rhs3d(i,j,k)=0.
@@ -55031,7 +54986,7 @@ subroutine advtcp
           call set_bc_temp_e (temp_p,one)
           call seam_scalar (temp_p,nr,nt,np)
 !
-!$acc exit data delete(rhs_cg,taux,rhs3d)
+!$omp target exit data map(delete:rhs_cg,taux,rhs3d)
         end if
 !
 ! ****** Update the amount of the large time step that has been stepped.
@@ -55060,7 +55015,7 @@ subroutine advtcp
       if (print_matrix_t) call write_matrix_t
 !
       call dealloc_t_matrix_coefs
-!$acc exit data delete(x_cg)
+!$omp target exit data map(delete:x_cg)
 !
       if (use_timer) call timer (TIME_ADVTCP)
 !
@@ -55244,15 +55199,12 @@ subroutine get_dtexp_tc (dtime_tc_exp)
 !
       max_eig=0.
 !
-!$acc parallel default(present) reduction(max:max_eig)
-!$omp parallel default(shared) reduction(max:max_eig)
-!$acc loop collapse(3) reduction(max:max_eig)
-!$omp do collapse(3) reduction(max:max_eig)
+!$omp target teams reduction(max:max_eig)
+!$omp distribute parallel do collapse(3) reduction(max:max_eig)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
             gersh_rad=0.
-!$acc loop seq
             do d=1,19
               gersh_rad=gersh_rad+abs(a_dia(d,i,j,k))
             enddo
@@ -55260,8 +55212,8 @@ subroutine get_dtexp_tc (dtime_tc_exp)
           enddo
         enddo
       enddo
-!$omp end parallel do
-!$acc end parallel
+!$omp end distribute parallel do
+!$omp end target teams
 !
 ! *** Compute the Euler time-step bound.
 !
@@ -55316,15 +55268,12 @@ subroutine get_dtexp_visc (dtime_exp)
 !
       max_eig=0.
 !
-!$acc parallel default(present) reduction(max:max_eig)
-!$omp parallel default(shared) reduction(max:max_eig)
-!$acc loop collapse(3) reduction(max:max_eig)
-!$omp do collapse(3) reduction(max:max_eig)
+!$omp target teams reduction(max:max_eig)
+!$omp distribute parallel do collapse(3) reduction(max:max_eig)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm-1
             gersh_rad=0.
-!$acc loop seq
             do d=1,15
               gersh_rad=gersh_rad+abs(a_r(d,i,j,k))
             enddo
@@ -55332,15 +55281,12 @@ subroutine get_dtexp_visc (dtime_exp)
           enddo
         enddo
       enddo
-!$omp enddo
-!
-!$acc loop collapse(3) reduction(max:max_eig)
-!$omp do collapse(3) reduction(max:max_eig)
+!$omp end distribute parallel do
+!$omp distribute parallel do collapse(3) reduction(max:max_eig)
       do k=2,npm1
         do j=2,ntm-1
           do i=2,nrm1
             gersh_rad=0.
-!$acc loop seq
             do d=1,15
               gersh_rad=gersh_rad+abs(a_t(d,i,j,k))
             enddo
@@ -55348,15 +55294,12 @@ subroutine get_dtexp_visc (dtime_exp)
           enddo
         enddo
       enddo
-!$omp enddo
-!
-!$acc loop collapse(3) reduction(max:max_eig)
-!$omp do collapse(3) reduction(max:max_eig)
+!$omp end distribute parallel do
+!$omp distribute parallel do collapse(3) reduction(max:max_eig)
       do k=2,npm-1
         do j=2,ntm1
           do i=2,nrm1
             gersh_rad=0.
-!$acc loop seq
             do d=1,15
               gersh_rad=gersh_rad+abs(a_p(d,i,j,k))
             enddo
@@ -55364,9 +55307,8 @@ subroutine get_dtexp_visc (dtime_exp)
           enddo
         enddo
       enddo
-!$omp enddo
-!$omp end parallel
-!$acc end parallel
+!$omp end distribute parallel do
+!$omp end target teams
 !
 ! *** Compute the Euler time-step bound.
 !
@@ -55449,7 +55391,7 @@ subroutine get_dtptl_visc (dtime_current)
         call load_matrix_v_solve_explicit
       end if
 !
-!$acc enter data create (Ay,y)
+!$omp target enter data map(alloc:Ay,y)
 !
       call pack_vvec (v,y)
 !
@@ -55461,7 +55403,7 @@ subroutine get_dtptl_visc (dtime_current)
       call dealloc_cg_ax_tmp
 !
       call unpack_vvec (Ay_vvec,Ay)
-!$acc exit data delete (Ay,y)
+!$omp target exit data map(delete:Ay,y)
 !
       call seam_vvec (Ay_vvec)
 !
@@ -55510,8 +55452,8 @@ subroutine get_dtptl_visc (dtime_current)
       axabsmax_t=-one
       axabsmax_p=-one
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc                           reduction(max:axabsmax_r)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:axabsmax_r)
       do k=2,npm1
         do j=j0,jr1
           do i=i0,ir1
@@ -55521,9 +55463,10 @@ subroutine get_dtptl_visc (dtime_current)
           enddo
         enddo
       enddo
+!$omp end target teams distribute parallel do
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc                           reduction(max:axabsmax_t)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:axabsmax_t)
       do k=2,npm1
         do j=j0,jt1
           do i=i0,it1
@@ -55533,9 +55476,10 @@ subroutine get_dtptl_visc (dtime_current)
           enddo
         enddo
       enddo
+!$omp end target teams distribute parallel do
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc                           reduction(max:axabsmax_p)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:axabsmax_p)
       do k=2,npm-1
         do j=j0,jp1
           do i=i0,ip1
@@ -55545,6 +55489,7 @@ subroutine get_dtptl_visc (dtime_current)
           enddo
         enddo
       enddo
+!$omp end target teams distribute parallel do
 !
       axabsmax=MAX(axabsmax_r,axabsmax_t,axabsmax_p)
       call global_max (axabsmax)
@@ -55557,16 +55502,14 @@ subroutine get_dtptl_visc (dtime_current)
 !
       if (axabsmax.gt.zero) then
 !
-!$acc parallel default(present) &
-!$acc                     copyin(axabsmax) reduction(min:dtime_ptl)
-!$acc loop collapse(3) reduction(min:dtime_ptl)
+!$omp target teams reduction(min:dtime_ptl) map(to:axabsmax) map(tofrom:dtime_ptl)
+!$omp distribute parallel do collapse(3) reduction(min:dtime_ptl)
         do k=2,npm1
           do j=j0,jr1
             do i=i0,ir1
               if (axabsmax.eq.ABS(Ay_vvec%r(i,j,k)) &
                   .and.ABS(v%r(i,j,k)).gt.fmin) then
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dk=-1,1
                   if (dk.ne.0) then
 !
@@ -55583,7 +55526,6 @@ subroutine get_dtptl_visc (dtime_current)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dj=-1,1
                   if (dj.ne.0) then
 !
@@ -55600,7 +55542,6 @@ subroutine get_dtptl_visc (dtime_current)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do di=-1,1
                   if (di.ne.0) then
 !
@@ -55622,15 +55563,15 @@ subroutine get_dtptl_visc (dtime_current)
             enddo
           enddo
         enddo
+!$omp end distribute parallel do
 !
-!$acc loop collapse(3) reduction(min:dtime_ptl)
+!$omp distribute parallel do collapse(3) reduction(min:dtime_ptl)
         do k=2,npm1
           do j=j0,jt1
             do i=i0,it1
               if (axabsmax.eq.ABS(Ay_vvec%t(i,j,k)) &
                   .and.ABS(v%t(i,j,k)).gt.fmin) then
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dk=-1,1
                   if (dk.ne.0) then
 !
@@ -55647,7 +55588,6 @@ subroutine get_dtptl_visc (dtime_current)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dj=-1,1
                   if (dj.ne.0) then
 !
@@ -55664,7 +55604,6 @@ subroutine get_dtptl_visc (dtime_current)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do di=-1,1
                   if (di.ne.0) then
 !
@@ -55686,15 +55625,15 @@ subroutine get_dtptl_visc (dtime_current)
             enddo
           enddo
         enddo
+!$omp end distribute parallel do
 !
-!$acc loop collapse(3) reduction(min:dtime_ptl)
+!$omp distribute parallel do collapse(3) reduction(min:dtime_ptl)
         do k=2,npm-1
           do j=j0,jp1
             do i=i0,ip1
               if (axabsmax.eq.ABS(Ay_vvec%p(i,j,k)) &
                   .and.ABS(v%p(i,j,k)).gt.fmin) then
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dk=-1,1
                   if (dk.ne.0) then
 !
@@ -55711,7 +55650,6 @@ subroutine get_dtptl_visc (dtime_current)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dj=-1,1
                   if (dj.ne.0) then
 !
@@ -55728,7 +55666,6 @@ subroutine get_dtptl_visc (dtime_current)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do di=-1,1
                   if (di.ne.0) then
 !
@@ -55750,7 +55687,8 @@ subroutine get_dtptl_visc (dtime_current)
             enddo
           enddo
         enddo
-!$acc end parallel
+!$omp end distribute parallel do
+!$omp end target teams
       end if
 !
       call global_min (dtime_ptl)
@@ -55875,7 +55813,7 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
         call load_matrix_t_solve_explicit (temp0)
       end if
 !
-!$acc enter data create(Ay_t,Ay,y)
+!$omp target enter data map(alloc:Ay_t,Ay,y)
 !
       call pack_scalar (temp_current,y)
 !
@@ -55888,14 +55826,14 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
 !
       call unpack_scalar (Ay_t,Ay)
 !
-!$acc exit data delete (Ay,y)
+!$omp target exit data map(delete:Ay,y)
 !
       call seam_scalar (Ay_t,nr,nt,np)
 !
       axabsmax=-one
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc                           reduction(max:axabsmax)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:axabsmax)
       do k=2,npm1
         do j=j0,j1
           do i=i0,i1
@@ -55905,7 +55843,7 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
           enddo
         enddo
       enddo
-!$acc end parallel
+!$omp end target teams distribute parallel do
 !
       call global_max (axabsmax)
 !
@@ -55917,16 +55855,14 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
 !
       if (axabsmax.gt.zero) then
 !
-!$acc parallel default(present) &
-!$acc                     copyin(axabsmax) reduction(min:dtime_ptl)
-!$acc loop collapse(3) reduction(min:dtime_ptl)
+!$omp target teams reduction(min:dtime_ptl) map(to:axabsmax) map(tofrom:dtime_ptl)
+!$omp distribute parallel do collapse(3) reduction(min:dtime_ptl)
         do k=2,npm1
           do j=j0,j1
             do i=i0,i1
               if (axabsmax.eq.ABS(Ay_t(i,j,k)) &
                   .and.ABS(temp_current(i,j,k)).gt.fmin) then
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dk=-1,1
                   if (dk.ne.0) then
 !
@@ -55943,7 +55879,6 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do dj=-1,1
                   if (dj.ne.0) then
 !
@@ -55960,7 +55895,6 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
                   end if
                 enddo
 !
-!$acc loop seq reduction(min:dtime_ptl)
                 do di=-1,1
                   if (di.ne.0) then
 !
@@ -55982,7 +55916,8 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
             enddo
           enddo
         enddo
-!$acc end parallel
+!$omp end distribute parallel do
+!$omp end target teams
       end if
 !
       call global_min (dtime_ptl)
@@ -56004,7 +55939,7 @@ subroutine get_dtptl_tc (dtime_current,temp_current,temp0)
       if (dtime_ptl.lt.dtime_current) dtime_ptl=dtime_current
 !
       dtime_current=dtime_ptl
-!$acc exit data delete(Ay_t)
+!$omp target exit data map(delete:Ay_t)
 !
       if (idebug.gt.0.and.iamp0) then
         write (*,*) ' '
@@ -56214,16 +56149,16 @@ subroutine initialize_heating
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data copyin(heatsource)
+!$omp target enter data map(to:heatsource)
 !
 ! ****** Check that the specified heat source types are valid.
 !
       do n=1,max_heat_sources
-!$acc enter data copyin(heatsource(n)%center_gaussian, &
-!$acc                   heatsource(n)%r_profile, &
-!$acc                   heatsource(n)%t_profile, &
-!$acc                   heatsource(n)%b_profile, &
-!$acc                   heatsource(n)%time_profile)
+!$omp target enter data map(to:heatsource(n)%center_gaussian, &
+!$omp                   heatsource(n)%r_profile, &
+!$omp                   heatsource(n)%t_profile, &
+!$omp                   heatsource(n)%b_profile, &
+!$omp                   heatsource(n)%time_profile)
 !
         if (.not.heatsource(n)%active) cycle
 !
@@ -56269,7 +56204,7 @@ subroutine initialize_heating
         end if
 !
       enddo
-!$acc enter data copyin(hs_type)
+!$omp target enter data map(to:hs_type)
 !
 ! ****** If requested, load the heat array specified by the
 ! ****** file whose name is in variable HEAT_FILE.
@@ -56293,12 +56228,12 @@ subroutine initialize_heating
 !
 ! ****** Calculate the initial heat flux.
 !
-!$acc update device(b%r,b%t,b%p,fj%r,fj%t,fj%p,eta,etacel)
+!$omp target update to(b%r,b%t,b%p,fj%r,fj%t,fj%p,eta,etacel)
       if (advance_zw.and.wtd_add_zw_heating) then
-!$acc update device(zp,zm,rho)
+!$omp target update to(zp,zm,rho)
       end if
       call heating
-!$acc update self(heat)
+!$omp target update from(heat)
 !
       hsi=0
       do i=1,max_heat_sources
@@ -56338,7 +56273,7 @@ subroutine initialize_heating
         allocate (heat_chromo(nr,nt,np))
 !
         call setup_chromo_heat (heat_chromo)
-!$acc enter data copyin(heat_chromo)
+!$omp target enter data map(to:heat_chromo)
 !
         if (iamp0) then
           write (IO_OUT,*)
@@ -56487,16 +56422,16 @@ subroutine initialize_radiative_loss
 ! ****** (No boost or near-0 smoothing is done for these).
 !
       n=1
-!$acc enter data copyin(t_zqc_1_array)
-!$acc enter data create(q_array)
+!$omp target enter data map(to:t_zqc_1_array)
+!$omp target enter data map(alloc:q_array)
       call get_qrad (q_array,t_zqc_1_array,n)
-!$acc update self(q_array)
+!$omp target update from(q_array)
       q1=q_array(1)
 !
       call get_dqrad (q_array,t_zqc_1_array,n)
-!$acc update self(q_array)
+!$omp target update from(q_array)
       qp1=q_array(1)
-!$acc exit data delete(q_array,t_zqc_1_array)
+!$omp target exit data map(delete:q_array,t_zqc_1_array)
 !
 ! ****** Set the coefficients.
 !
@@ -56655,7 +56590,7 @@ subroutine load_heat_from_file (fname)
                              fldtab(IFLD_HEAT)%n2, &
                              fldtab(IFLD_HEAT)%n3, &
                              heat_g,heat_from_file)
-!$acc enter data copyin(heat_from_file)
+!$omp target enter data map(to:heat_from_file)
 !
 ! ****** Set boundary conditions at the poles.
 !
@@ -56809,7 +56744,7 @@ subroutine load_heat_mask_from_file (fname)
                              fldtab(IFLD_HEAT)%n2, &
                              fldtab(IFLD_HEAT)%n3, &
                              heat_mask_g,heat_mask)
-!$acc enter data copyin(heat_mask)
+!$omp target enter data map(to:heat_mask)
 !
 ! ****** Set boundary conditions at the poles.
 !
@@ -56921,7 +56856,7 @@ subroutine heating
       real(r_typ), dimension(2:ntm1,2:npm1) :: b_photo
 !
 !-----------------------------------------------------------------------
-!$acc enter data create(nl_factor,b_photo)
+!$omp target enter data map(alloc:nl_factor,b_photo)
 !
 ! ****** Zero out the heat array.
 !
@@ -56950,7 +56885,7 @@ subroutine heating
 ! ****** Broadcast NL_FACTOR to all processors sharing
 ! ****** this base location.
 !
-!$acc host_data use_device(nl_factor,b_photo)
+!$omp target data use_device_ptr(nl_factor,b_photo)
       call MPI_Bcast (nl_factor,(nt-2)*(np-2),ntype_real, &
                       iproc_rb0,comm_r,ierr)
 !
@@ -56959,7 +56894,7 @@ subroutine heating
 !
       call MPI_Bcast (b_photo,(nt-2)*(np-2),ntype_real, &
                       iproc_rb0,comm_r,ierr)
-!$acc end host_data
+!$omp end target data
 !
 ! ****** Add the contributions of all the heat sources at
 ! ****** each mesh point.
@@ -57236,7 +57171,7 @@ subroutine heating
         enddo
       end if
 !
-!$acc exit data delete(nl_factor,b_photo)
+!$omp target exit data map(delete:nl_factor,b_photo)
 end subroutine
 !#######################################################################
 function get_2t_coupling_constant()
@@ -57465,7 +57400,7 @@ subroutine solve_2t_coupling
 end subroutine
 !#######################################################################
 pure function profile_value (prof,x)
-!$acc routine(profile_value) seq
+!$omp declare target (profile_value)
 !
 !-----------------------------------------------------------------------
 !
@@ -57836,7 +57771,7 @@ subroutine write_matrix_t
 end subroutine
 !#######################################################################
 pure function boost (tempk)
-!$acc routine(boost) seq
+!$omp declare target (boost)
 !
 !-----------------------------------------------------------------------
 !
@@ -58097,7 +58032,7 @@ subroutine get_dqrad (dqrad,tempk,n)
 !
 !-----------------------------------------------------------------------.
 !
-!$acc enter data create(qradp,qradm,temp_tmp)
+!$omp target enter data map(alloc:qradp,qradm,temp_tmp)
       do concurrent (i=1:n)
         temp_tmp(i)=(one+half*eps)*tempk(i)
       enddo
@@ -58115,7 +58050,7 @@ subroutine get_dqrad (dqrad,tempk,n)
         dqrad(i)=(qradp(i)-qradm(i))/dt
       enddo
 !
-!$acc exit data delete(qradp,qradm,temp_tmp)
+!$omp target exit data map(delete:qradp,qradm,temp_tmp)
 end subroutine
 !#######################################################################
 subroutine get_qrad_rosner (qrad,tempk,n)
@@ -59062,7 +58997,7 @@ subroutine filter_hhh (f)
 !
 ! ****** Apply a "(1,2,1)/4" digital filter in r, theta and phi.
 !
-!$acc enter data create(ff)
+!$omp target enter data map(alloc:ff)
       do concurrent (i=1:nr, j=1:nt, k=1:np)
         ff(i,j,k)=f(i,j,k)
       enddo
@@ -59110,7 +59045,7 @@ subroutine filter_hhh (f)
         f(i,j,k)=ff(i,j,k)
       enddo
 !
-!$acc exit data delete(ff)
+!$omp target exit data map(delete:ff)
 end subroutine
 !#######################################################################
 subroutine advpw
@@ -59156,8 +59091,8 @@ subroutine advpw
 !-----------------------------------------------------------------------
 !
       if (use_timer) call timer (TIME_ADVPW)
-!$acc enter data create(va,divv,div_ep,div_em,epp,emp, &
-!$acc                   fkdotvmx,dt_rhopaw_i)
+!$omp target enter data map(alloc:va,divv,div_ep,div_em,epp,emp, &
+!$omp                   fkdotvmx,dt_rhopaw_i)
 !
 ! ****** Allocate temporary wave advection velocity.
 !
@@ -59185,12 +59120,11 @@ subroutine advpw
 !
 ! ****** Estimate the maximum explicit stable time step.
 !
-!$acc parallel default(present)
-!$acc loop gang
-!$omp parallel do default(shared)
+!$omp target teams
+!$omp distribute
       do i=2,nrm1
         tmp=0.
-!$acc loop collapse(2) reduction(max:tmp)
+!$omp parallel do collapse(2) reduction(max:tmp)
         do k=2,npm1
           do j=2,ntm1
             fkr2=drh_i(i)**2
@@ -59211,19 +59145,19 @@ subroutine advpw
             tmp=max(tmp,fkdotvmx_tmp)
           enddo
         enddo
+!$omp end parallel do
         fkdotvmx(i)=max(1.e-20_r_typ,tmp)
       enddo
-!$acc end parallel
-!$omp end parallel do
+!$omp end distribute
+!$omp end target teams
 !
       dtaw=dtime
 !
-!$acc parallel loop default(present) reduction(min:dtaw)
-!$omp parallel do default(shared) reduction(min:dtaw)
+!$omp target teams distribute parallel do reduction(min:dtaw)
       do i=2,nrm1
         dtaw=min(dtaw,safety_factor_aw*cfl*rho_aw/fkdotvmx(i))
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
       call global_min (dtaw)
 !
@@ -59332,8 +59266,8 @@ subroutine advpw
         call check_negative_field (em,nr,nt,np,FNAME2,RNAME)
       end if
 !
-!$acc exit data delete(va,divv,div_ep,div_em,epp,emp, &
-!$acc                  fkdotvmx,dt_rhopaw_i)
+!$omp target exit data map(delete:va,divv,div_ep,div_em,epp,emp, &
+!$omp                  fkdotvmx,dt_rhopaw_i)
       if (use_timer) call timer (TIME_ADVPW)
 !
 end subroutine
@@ -60165,8 +60099,8 @@ subroutine advzw
 !-----------------------------------------------------------------------
 !
       if (use_timer) call timer (TIME_ADVZW)
-!$acc enter data create(logva,logrho,r_1_p,r_1_m,r_2_p,r_2_m,d0,va, &
-!$acc                   zpp,zmp,vdgzp,vdgzm)
+!$omp target enter data map(alloc:logva,logrho,r_1_p,r_1_m,r_2_p,r_2_m,d0,va, &
+!$omp                   zpp,zmp,vdgzp,vdgzm)
 !
 ! ****** Allocate the upwind direction coefficients if needed.
 !
@@ -60217,10 +60151,8 @@ subroutine advzw
 ! ****** advance (account for both + and - directions).
 !
       fkdotvmx=1.e-20_r_typ
-!$acc parallel loop collapse(3) default(present) &
-!$acc  reduction(max:fkdotvmx)
-!$omp parallel do collapse(3) default(shared) &
-!$omp reduction(max:fkdotvmx)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp  reduction(max:fkdotvmx)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -60240,7 +60172,7 @@ subroutine advzw
           enddo
         enddo
       enddo
-!$omp end parallel do
+!$omp end target teams distribute parallel do
 !
       dtaw=min(dtime,zw_cfl*zw_rho_aw/fkdotvmx)
 !
@@ -60521,8 +60453,8 @@ subroutine advzw
         call dealloc_vvec (fl_cmm)
       end if
 !
-!$acc exit data delete(logva,logrho,r_1_p,r_1_m,r_2_p,r_2_m,d0,va, &
-!$acc                  zpp,zmp,vdgzp,vdgzm)
+!$omp target exit data map(delete:logva,logrho,r_1_p,r_1_m,r_2_p,r_2_m,d0,va, &
+!$omp                  zpp,zmp,vdgzp,vdgzm)
       if (use_timer) call timer (TIME_ADVZW)
 !
 end subroutine
@@ -60727,7 +60659,7 @@ subroutine init_zw
         call write_field_tp ('wtd_z0_flux_mask.h5', &
                               IFLD_ZP,z0_flux_mask,0)
 !
-!$acc enter data copyin(z0_flux_mask)
+!$omp target enter data map(to:z0_flux_mask)
       end if
 !
 ! ****** Check settings for the optional open field cutoff.
@@ -60775,7 +60707,7 @@ subroutine init_zw
           call read_open_cutoff_from_restart (rs_i(1)%fname)
         endif
 !
-!$acc enter data copyin(wtd_open_flux_zmult,wtd_mask_open,wtd_net_pflux)
+!$omp target enter data map(to:wtd_open_flux_zmult,wtd_mask_open,wtd_net_pflux)
       endif
 !
 ! ****** Check the flux-limiter type.
@@ -60843,7 +60775,7 @@ subroutine init_zw
           FLUSH (IO_OUT)
         end if
 !
-!$acc update device(zwlimit)
+!$omp target update to(zwlimit)
       end if
 !
 end subroutine
@@ -61240,7 +61172,7 @@ subroutine get_steepness_indicator (qq,rr,fl_cp,fl_cm)
       integer :: i,j,k
 !
 !-----------------------------------------------------------------------
-!$acc enter data create(diffp)
+!$omp target enter data map(alloc:diffp)
 !
 ! ****** Steepness in R direction
 !
@@ -61284,7 +61216,7 @@ subroutine get_steepness_indicator (qq,rr,fl_cp,fl_cm)
       enddo
       call seam_scalar_xd (rr%p,nr,nt,npm,.false.,.false.,.true.)
 !
-!$acc exit data delete (diffp)
+!$omp target exit data map(delete:diffp)
 end subroutine
 !#######################################################################
 subroutine get_flux_limiter (rr, phi)
@@ -61497,7 +61429,7 @@ subroutine get_fpw (f)
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(pwhhh)
+!$omp target enter data map(alloc:pwhhh)
       pwe=0.
       pwz=0.
 !
@@ -61537,11 +61469,11 @@ subroutine get_fpw (f)
 !
 ! ****** No seam is needed here since boundaries of f are never used.
 !
-!$acc exit data delete(pwhhh)
+!$omp target exit data map(delete:pwhhh)
 end subroutine
 !#######################################################################
 pure function wtd_rho_factor(rho_mas)
-!$acc routine(wtd_rho_factor) seq
+!$omp declare target (wtd_rho_factor)
 !
 !-----------------------------------------------------------------------
 !
@@ -62130,7 +62062,7 @@ subroutine newflux
           first=.false.
           allocate (bt_pbv (nt,npm))
           allocate (bp_pbv (ntm,np))
-!$acc enter data create(bt_pbv,bp_pbv)
+!$omp target enter data map(alloc:bt_pbv,bp_pbv)
 !
           do concurrent (k=1:npm, j=1:nt)
             bt_pbv(j,k)=0.
@@ -62152,7 +62084,7 @@ subroutine newflux
         allocate (vr_pbv (nt,np))
         allocate (vt_pbv (ntm,np))
         allocate (vp_pbv (nt,npm))
-!$acc enter data create(bt_pbv,bp_pbv,vr_pbv,vt_pbv,vp_pbv)
+!$omp target enter data map(alloc:bt_pbv,bp_pbv,vr_pbv,vt_pbv,vp_pbv)
       endif
 !
       do concurrent (k=1:np, j=1:nt)
@@ -62190,18 +62122,18 @@ subroutine newflux
 !
       if (prescribe_bv) then
         call get_pbv_boundaries
-!$acc update device(br_pbv,bt_pbv,bp_pbv,vr_pbv,vt_pbv,vp_pbv)
+!$omp target update to(br_pbv,bt_pbv,bp_pbv,vr_pbv,vt_pbv,vp_pbv)
       else
         if (if_pchip) then
           call get_flux_pchip (time,br_pbv)
         else if (time_dependent_corona_from_files) then
           call get_all_pchip (time,br_pbv,vt_pbv,vp_pbv,phi_tdc)
           ef_is_on=.true.
-!$acc update device(vt_pbv,vp_pbv,phi_tdc)
+!$omp target update to(vt_pbv,vp_pbv,phi_tdc)
         else
           call get_flux (time,br_pbv)
         end if
-!$acc update device(br_pbv)
+!$omp target update to(br_pbv)
       end if
 !
       if (.not.ef_is_on.and..not.prescribe_bv) then
@@ -62227,7 +62159,7 @@ subroutine newflux
 !
       if (rb0) then
 !
-!$acc enter data create(dbr,rhs2d,psi)
+!$omp target enter data map(alloc:dbr,rhs2d,psi)
         do concurrent (k=1:npm, j=1:ntm)
           dbr(j,k)=0.
         enddo
@@ -62306,7 +62238,7 @@ subroutine newflux
           eflux_ep(j,k)=(psi(j,k)-psi(j-1,k)) &
                       *dth_i(j)*r_i(1)/dtime
         enddo
-!$acc exit data delete(dbr,rhs2d,psi)
+!$omp target exit data map(delete:dbr,rhs2d,psi)
 !
 ! ****** Calculate component due to differential rotation
 !
@@ -62324,7 +62256,7 @@ subroutine newflux
           return
         end if
 !
-!$acc enter data create(dvxb,vtaux,vpaux,phi)
+!$omp target enter data map(alloc:dvxb,vtaux,vpaux,phi)
         if (prescribe_bv) then
 !
 ! ****** Add in the br monopole.
@@ -62452,7 +62384,7 @@ subroutine newflux
           eflux_ep(j,k)=eflux_ep(j,k)+(phi(j,k+1)-phi(j,k)) &
                         *dp_mult*dp_i(k)*r_i(1)*sth_i(j)
         enddo
-!$acc exit data delete(dvxb,vtaux,vpaux,phi)
+!$omp target exit data map(delete:dvxb,vtaux,vpaux,phi)
 !
 ! ****** Boundary conditions at the poles
 !
@@ -62474,7 +62406,7 @@ subroutine newflux
           allocate (et_save(ntm1,np))
           allocate (ep_star(nt,npm1))
           allocate (ep_save(nt,npm1))
-!$acc enter data create(et_star,ep_star,et_save,ep_save)
+!$omp target enter data map(alloc:et_star,ep_star,et_save,ep_save)
 !
           do concurrent (k=1:np, j=1:ntm1)
             et_star(j,k)=0.
@@ -62714,7 +62646,7 @@ subroutine newflux
 !
 ! ****** Deallocate temporary arrays.
 !
-!$acc exit data delete(et_star,ep_star,et_save,ep_save)
+!$omp target exit data map(delete:et_star,ep_star,et_save,ep_save)
           deallocate (et_star)
           deallocate (ep_star)
           deallocate (et_save)
@@ -63819,7 +63751,7 @@ subroutine shift_phi (omega_input,phi_old,phi_new)
 !
       phishift=dtime*omega_input
 !
-!$acc enter data create(pvh)
+!$omp target enter data map(alloc:pvh)
       do concurrent (k=1:np)
         pvh(k)=ph(k)-phishift
         pvh(k)=mod(pvh(k),pi2)
@@ -63877,7 +63809,7 @@ subroutine shift_phi (omega_input,phi_old,phi_new)
           return
         end if
 !
-!$acc enter data create(term)
+!$omp target enter data map(alloc:term)
         do concurrent (j=1:nt)
           term(j)=0
         enddo
@@ -63961,10 +63893,10 @@ subroutine shift_phi (omega_input,phi_old,phi_new)
           end if
         enddo
 !
-!$acc exit data delete(term)
+!$omp target exit data map(delete:term)
       end if
 !
-!$acc exit data delete(pvh)
+!$omp target exit data map(delete:pvh)
 end subroutine
 !#######################################################################
 subroutine shift_psi (omega_input,psi_old,psi_new)
@@ -64012,7 +63944,7 @@ subroutine shift_psi (omega_input,psi_old,psi_new)
 !
       phishift=dtime*omega_input
 !
-!$acc enter data create(pvm)
+!$omp target enter data map(alloc:pvm)
       do concurrent (k=1:npm)
         pvm(k)=p(k)-phishift
         pvm(k)=mod(pvm(k),pi2)
@@ -64061,7 +63993,7 @@ subroutine shift_psi (omega_input,psi_old,psi_new)
 !
         c=ip_bc_interp_order+1
 !
-!$acc enter data create(term)
+!$omp target enter data map(alloc:term)
         do concurrent (j=1:ntm)
           term(j)=0
         enddo
@@ -64154,10 +64086,10 @@ subroutine shift_psi (omega_input,psi_old,psi_new)
           end if
         enddo
 !
-!$acc exit data delete(term)
+!$omp target exit data map(delete:term)
       end if
 !
-!$acc exit data delete(pvm)
+!$omp target exit data map(delete:pvm)
 end subroutine
 !#######################################################################
 subroutine get_ip_boundaries
@@ -64486,15 +64418,15 @@ subroutine get_ip_boundaries
       call set_pole_bc_vvec_tp_cpu (vt_ip,vp_ip)
 !
       if (advance_pw) then
-!$acc update device(epbcr0re,embcr0re)
+!$omp target update to(epbcr0re,embcr0re)
       end if
       if (advance_fcs) then
-!$acc update device(fcsr0)
+!$omp target update to(fcsr0)
       end if
       if (advance_zw) then
-!$acc update device(zpbcr0re,zmbcr0re)
+!$omp target update to(zpbcr0re,zmbcr0re)
       end if
-!$acc update device(br_ip,bt_ip,bp_ip,vr_ip,vt_ip,vp_ip,t_ip,rho_ip)
+!$omp target update to(br_ip,bt_ip,bp_ip,vr_ip,vt_ip,vp_ip,t_ip,rho_ip)
       if (ip_bc_use_pot_solves) then
 !
 !-----------------------------------------------------------------------
@@ -64502,12 +64434,12 @@ subroutine get_ip_boundaries
 !-----------------------------------------------------------------------
 !
         if (rb0) then
-!$acc enter data create(rhs2d,psi,phi,dbr,dvxb,vtaux,vpaux)
+!$omp target enter data map(alloc:rhs2d,psi,phi,dbr,dvxb,vtaux,vpaux)
 !
 ! ****** Perform preliminary solve if using rotated guess for PSI.
 !
           if (first_rb0.and.ip_bc_shift_psi_guess) then
-!$acc enter data create(br_nomono)
+!$omp target enter data map(alloc:br_nomono)
             brmono=half*br00*r0**2*(rh_i(1)**2+rh_i(2)**2)
             do concurrent (k=1:npm, j=1:ntm)
               rhs2d(j,k)=0.
@@ -64547,7 +64479,7 @@ subroutine get_ip_boundaries
               psi_rn(j,k)=psi_n(j,k)
             enddo
             first_rb0=.false.
-!$acc exit data delete (br_nomono)
+!$omp target exit data map(delete:br_nomono)
           end if
 !
 ! ****** Set up guess for PSI solve.
@@ -64729,11 +64661,11 @@ subroutine get_ip_boundaries
             phi_old(j,k)=phi(j,k)
           enddo
 !
-!$acc exit data delete (rhs2d,psi,phi,dbr,dvxb,vtaux,vpaux)
+!$omp target exit data map(delete:rhs2d,psi,phi,dbr,dvxb,vtaux,vpaux)
         end if
 !
       end if
-!$acc exit data delete (phi)
+!$omp target exit data map(delete:phi)
 !
 end subroutine
 !######################################################################
@@ -65248,7 +65180,7 @@ subroutine bc_vcrossb (v,b,vxb,vxb_b)
 !
 !-----------------------------------------------------------------------
 !
-!$acc enter data create(v_norm_r0,v_trans_r0_t,v_trans_r0_p)
+!$omp target enter data map(alloc:v_norm_r0,v_trans_r0_t,v_trans_r0_p)
       if (rb0) then
 !
 ! ****** Set the normal and transverse velocity at r=R0.
@@ -65426,7 +65358,7 @@ subroutine bc_vcrossb (v,b,vxb,vxb_b)
         enddo
       end if
 !
-!$acc exit data delete(v_norm_r0,v_trans_r0_t,v_trans_r0_p)
+!$omp target exit data map(delete:v_norm_r0,v_trans_r0_t,v_trans_r0_p)
 end subroutine
 !#######################################################################
 subroutine bc_vcrossb_centered (v,b,vxb,vxb_b)
@@ -66506,21 +66438,21 @@ subroutine initialize_from_file_2d
 !
       if (rb1.and.char_bc1) then
         cbc1_pb(:,:)=half*(pres(nr,:,:)+pres(nrm1,:,:))
-!$acc update device(cbc1_pb)
+!$omp target update to(cbc1_pb)
       end if
 !
       if (rb0.and.interplanetary_run) then
         rho_ip(:,:)=rho0i(:,:)
         t_ip(:,:)=tr0v(:,:)
-!$acc update device(rho_ip,t_ip)
+!$omp target update to(rho_ip,t_ip)
       end if
 !
-!$acc update device(temp_e,rho)
+!$omp target update to(temp_e,rho)
       if (advance_tp) then
-!$acc update device(temp_p)
+!$omp target update to(temp_p)
       end if
       call setpt
-!$acc update self(pres,temp)
+!$omp target update from(pres,temp)
 !
 end subroutine
 !#######################################################################
@@ -67588,8 +67520,8 @@ subroutine initialize_field_line
       deallocate (bt)
       deallocate (cost)
       deallocate (rt_true)
-!$acc update device(fl_fac,fl_fach,fl_fac_i,fl_fach_i, &
-!$acc              r_true,rh_true,r_true_i,rh_true_i)
+!$omp target update to(fl_fac,fl_fach,fl_fac_i,fl_fach_i, &
+!$omp              r_true,rh_true,r_true_i,rh_true_i)
 !
 end subroutine
 !#######################################################################
@@ -67638,7 +67570,7 @@ subroutine setup_fcs
       else
         vmod(:,:,:)=one
       end if
-!$acc enter data copyin(vmod)
+!$omp target enter data map(to:vmod)
 !
 ! ****** Array to help in the interpolation.
 !
@@ -67663,7 +67595,7 @@ subroutine setup_fcs
           end if
         end if
       enddo
-!$acc enter data copyin(i_chemi_eigen)
+!$omp target enter data map(to:i_chemi_eigen)
       if(iamp0) then
         call sub_read_eigen_matrix(path_eigen)
       else
@@ -67694,9 +67626,9 @@ subroutine setup_fcs
         ntype_real,0,MPI_COMM_WORLD,ierr)
         call MPI_Bcast (eigen(ichemi)%r,ln1, &
         ntype_real,0,MPI_COMM_WORLD,ierr)
-!$acc enter data copyin(eigen(ichemi)%eqis,eigen(ichemi)%evalues, &
-!$acc       eigen(ichemi)%evector,eigen(ichemi)%evector_invers, &
-!$acc       eigen(ichemi)%c,eigen(ichemi)%r)
+!$omp target enter data map(to:eigen(ichemi)%eqis,eigen(ichemi)%evalues, &
+!$omp       eigen(ichemi)%evector,eigen(ichemi)%evector_invers, &
+!$omp       eigen(ichemi)%c,eigen(ichemi)%r)
       enddo
       ncs=0
       do jelem=1,nelem
@@ -67753,7 +67685,7 @@ subroutine setup_fcs
         end if
       end if
 !
-!$acc enter data copyin(fcs,fcsr0)
+!$omp target enter data map(to:fcs,fcsr0)
       do jcs=1,ncs
 !
 ! ****** Set boundary conditions.
@@ -67777,7 +67709,7 @@ subroutine setup_fcs
 !
       rhoold(:,:,:)=rho(:,:,:)
       temp_e0(:,:,:)=temp_e(:,:,:)
-!$acc update device(rhoold,temp_e0)
+!$omp target update to(rhoold,temp_e0)
 !
 end subroutine
 !#######################################################################
@@ -67818,7 +67750,7 @@ subroutine advfcs
       real(r_typ), dimension(nr,nt,np,ncs) :: fcsstar
 !
 !-----------------------------------------------------------------------
-!$acc enter data create(vdg,divv,fcsstar)
+!$omp target enter data map(alloc:vdg,divv,fcsstar)
 !
 ! ****** Dynamical advancement
 !
@@ -67856,8 +67788,8 @@ subroutine advfcs
 !
 ! ***** Advance the ionization.
 !
-!$acc parallel loop collapse(3) default(present) &
-!$acc  private(conce_ini,conce_nei,te_arr,ne_arr)
+!$omp target teams distribute parallel do collapse(3) &
+!$omp    private(conce_ini,conce_nei,te_arr,ne_arr)
       do k=2,npm1
         do j=2,ntm1
           do i=2,nrm1
@@ -67870,10 +67802,8 @@ subroutine advfcs
             ne_arr(2)=fn_n*rho(i,j,k)
 !
             jcs=0
-!$acc loop seq
             do jelem=1,nelem
               natom=natom_list(jelem)
-!$acc loop seq
               do jj=1,natom+1
                 jcs=jcs+1
                 conce_ini(jj,natom)=fcsstar(i,j,k,jcs)
@@ -67885,10 +67815,8 @@ subroutine advfcs
                  conce_ini,conce_nei)
 !
             jcs=0
-!$acc loop seq
             do jelem=1,nelem
               natom=natom_list(jelem)
-!$acc loop seq
               do jj=1,natom+1
                 jcs=jcs+1
                 fcs(i,j,k,jcs)=conce_nei(jj,natom)
@@ -67899,6 +67827,7 @@ subroutine advfcs
         enddo
 !
       enddo
+!$omp end target teams distribute parallel do
 !
       do jcs=1,ncs
 !
@@ -67921,7 +67850,7 @@ subroutine advfcs
 !
       enddo
 !
-!$acc exit data delete(vdg,divv,fcsstar)
+!$omp target exit data map(delete:vdg,divv,fcsstar)
 end subroutine
 !#######################################################################
 subroutine sub_read_eigen_matrix (path_eigen)
@@ -67980,8 +67909,8 @@ end subroutine
 !#######################################################################
 pure subroutine sub_solve_ionic_onestep (nelem,natom_array, &
               i_chemi_eigen,te_arr, ne_arr,dt_input,conce_ini,conce_nei)
-!$acc routine(sub_solve_ionic_onestep) seq
-!$acc routine(func_solveionization_eigen) seq
+!$omp declare target (sub_solve_ionic_onestep)
+!$omp declare target (func_solveionization_eigen)
 !
 !-----------------------------------------------------------------------
 !
@@ -68038,7 +67967,6 @@ pure subroutine sub_solve_ionic_onestep (nelem,natom_array, &
 !
 ! ****** single timestep
 !
-!$acc loop seq
         do jelem=1,nelem
           natom=natom_array(jelem)
           call func_solveionization_eigen (i_chemi_eigen(jelem), &
@@ -68050,7 +67978,6 @@ pure subroutine sub_solve_ionic_onestep (nelem,natom_array, &
 ! ****** sub-timestep
 !
         dt_sub=dt_input/real(n_inter-1,r_typ)
-!$acc loop seq
         do i=1, n_inter-1
           te_now=real(i-1,r_typ)*(te_arr(2)-te_arr(1))/ &
           float(n_inter-1)+te_arr(1)
@@ -68059,7 +67986,6 @@ pure subroutine sub_solve_ionic_onestep (nelem,natom_array, &
           ne_e=float(i)*(ne_arr(2)-ne_arr(1))/ &
           float(n_inter-1)+ne_arr(1)
           ne_now=0.5_r_typ*(ne_s+ne_e)
-!$acc loop seq
           do jelem=1,nelem
             natom=natom_array(jelem)
             call func_solveionization_eigen (i_chemi_eigen(jelem), &
@@ -68107,7 +68033,7 @@ end subroutine
 !#######################################################################
 pure subroutine func_solveionization_eigen (ichemi,natom,te,rho, &
                                                   f0,dt,ft)
-!$acc routine(func_solveionization_eigen) seq
+!$omp declare target (func_solveionization_eigen)
 !
 !-----------------------------------------------------------------------
 !
